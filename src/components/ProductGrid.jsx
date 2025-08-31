@@ -163,7 +163,7 @@ export default function ProductGrid({
                       {p.price != null ? formatNaira(p.price) : "—"}
                     </span>
                     <button className="rounded-lg border px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
-                      View
+                      message
                     </button>
                   </div>
                 </div>

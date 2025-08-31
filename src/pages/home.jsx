@@ -56,7 +56,7 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50 text-gray-900">
       <section className="mx-auto max-w-6xl px-4 py-10">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold">Gadgets</h1>
+          <h1 className="text-3xl font-bold">Tech Jojo</h1>
           <p className="text-sm text-gray-500">
             Pick a category to browse products.
           </p>
