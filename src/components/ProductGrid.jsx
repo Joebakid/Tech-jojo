@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom"; // for Home button
 
-// tiny currency helper (NGN)
 function formatNaira(n) {
   try {
     return new Intl.NumberFormat("en-NG", {
@@ -14,7 +13,6 @@ function formatNaira(n) {
   }
 }
 
-// Minimal Card (no shadcn dependency)
 function Card({ children, className = "" }) {
   return (
     <div className={`rounded-2xl border bg-white shadow-sm ${className}`}>
@@ -23,7 +21,7 @@ function Card({ children, className = "" }) {
   );
 }
 
-// ✅ Image with skeleton loader + error fallback
+/** Image with a HAND-CODED spinner + error fallback (no imports) */
 function ImgWithLoader({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
@@ -40,9 +38,11 @@ function ImgWithLoader({ src, alt }) {
 
   return (
     <div className="relative aspect-[4/3] w-full bg-gray-100">
-      {/* skeleton while loading */}
+      {/* custom spinner overlay */}
       {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-gray-200" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
+        </div>
       )}
 
       <img
@@ -50,9 +50,7 @@ function ImgWithLoader({ src, alt }) {
         alt={alt}
         onLoad={() => setLoaded(true)}
         onError={() => setErrored(true)}
-        className={`h-full w-full object-cover transition-opacity duration-300 ${
-          loaded ? "opacity-100" : "opacity-0"
-        }`}
+        className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
         loading="lazy"
       />
     </div>
@@ -62,12 +60,11 @@ function ImgWithLoader({ src, alt }) {
 export default function ProductGrid({
   title = "Products",
   items = [],
-  pageSize = 8, // change per page if you want
+  pageSize = 8,
 }) {
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
-  // Filter by name/brand/category/tags
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     if (!needle) return items;
@@ -92,7 +89,6 @@ export default function ProductGrid({
     setPage(Math.min(Math.max(1, p), pages));
   }
 
-  // Reset to page 1 whenever search changes
   function onSearchChange(e) {
     setQ(e.target.value);
     if (page !== 1) setPage(1);
@@ -103,14 +99,12 @@ export default function ProductGrid({
       <section className="mx-auto max-w-6xl px-4 py-10">
         <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            {/* Home button */}
             <Link
               to="/"
               className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-100"
             >
               ← Home
             </Link>
-
             <h1 className="mt-2 text-3xl font-bold">{title}</h1>
             <p className="text-sm text-gray-500">Search and browse by page.</p>
           </div>
@@ -133,7 +127,6 @@ export default function ProductGrid({
           </div>
         </header>
 
-        {/* Grid */}
         {current.length === 0 ? (
           <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
             No products found.
@@ -146,7 +139,6 @@ export default function ProductGrid({
                 className="overflow-hidden transition hover:shadow-lg"
               >
                 <ImgWithLoader src={p.img} alt={p.name} />
-
                 <div className="space-y-2 p-4">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="line-clamp-1 text-base font-semibold">
@@ -180,7 +172,6 @@ export default function ProductGrid({
           </div>
         )}
 
-        {/* Pagination */}
         <div className="mt-8 flex items-center justify-between">
           <div className="text-xs text-gray-500">
             Showing <b>{current.length}</b> of <b>{total}</b> item
@@ -202,11 +193,9 @@ export default function ProductGrid({
             >
               ‹ Prev
             </button>
-
             <span className="px-2 text-xs text-gray-700">
               Page <b>{pageSafe}</b> / <b>{pages}</b>
             </span>
-
             <button
               onClick={() => goto(pageSafe + 1)}
               disabled={pageSafe === pages}
