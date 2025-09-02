@@ -44,14 +44,15 @@ const tiles = [
     accent:
       "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
-  {
-    to: "/desktop",
-    title: "desktop",
-    subtitle: "USB-C • Lightning • HDMI",
-    Icon: Cable,
-    accent:
-      "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
-  },
+{
+  to: "/desktop",
+  title: "Desktop",
+  subtitle: "Towers • All-in-Ones • Mini PCs",
+  Icon: Cable,
+  accent:
+    "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
+},
+
   {
     to: "/tablets",
     title: "Tablets",
@@ -68,7 +69,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-4 py-10">
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Tech Jojo</h1>
+            <h1 className="text-3xl font-bold">techjojo</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Pick a category to browse products.
             </p>

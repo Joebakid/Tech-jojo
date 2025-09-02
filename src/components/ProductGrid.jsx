@@ -265,59 +265,55 @@ export default function ProductGrid({
             No products found.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {current.map((p) => (
-              <Card key={p.id} className="overflow-hidden transition hover:shadow-lg">
-                <ImgWithLoader src={p.img} alt={p.name} />
-                <div className="space-y-2 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="line-clamp-1 text-base font-semibold">
-                      {p.name}
-                    </h3>
-                    {p.brand && (
-                      <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-gray-300 dark:border-neutral-700">
-                        {p.brand}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Specs from CSV (all optional) */}
-                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-                    {p.display && <div>Display: {p.display}</div>}
-                    {p.cpu && <div>CPU: {p.cpu}</div>}
-                    {p.ram && <div>RAM: {p.ram}</div>}
-                    {p.storage && <div>Storage: {p.storage}</div>}
-                    {p.gpu && <div>Graphics: {p.gpu}</div>}
-                    {p.keyboard && <div>Keyboard: {p.keyboard}</div>}
-                    {p.security && <div>Security: {p.security}</div>}
-                    {p.condition && <div>Condition: {p.condition}</div>}
-                    {p.delivery && <div>Delivery: {p.delivery}</div>}
-                    {p.bundle && <div>Bundle: {p.bundle}</div>}
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm font-bold">
-                      {p.price != null ? formatNaira(p.price) : "—"}
-                    </span>
-
-                    {/* WhatsApp message button */}
-                    <a
-                      href={waLinkForProduct(
-                        p,
-                        whatsAppNumber.replace(/[^\d]/g, "")
-                      )}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-lg border px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
-                      title={`WhatsApp: ${whatsAppNumber}`}
-                    >
-                      message
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            ))}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {current.map((p) => (
+        <Card key={p.id} className="overflow-hidden transition hover:shadow-lg flex flex-col h-full">
+          <div className="w-full h-48 overflow-hidden">
+            <ImgWithLoader src={p.img} alt={p.name} />
           </div>
+          <div className="flex flex-col p-4 space-y-3 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="line-clamp-1 text-base font-semibold">{p.name}</h3>
+              {p.brand && (
+                <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-gray-300 dark:border-neutral-700">
+                  {p.brand}
+                </span>
+              )}
+            </div>
+
+            {/* Specs from CSV (all optional) */}
+            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5 flex-1">
+              {p.display && <div>🖥️Display: {p.display}</div>}
+              {p.cpu && <div>💻CPU: {p.cpu}</div>}
+              {p.ram && <div>🧠RAM: {p.ram}</div>}
+              {p.storage && <div>💾Storage: {p.storage}</div>}
+              {p.gpu && <div>🎮Graphics: {p.gpu}</div>}
+              {p.keyboard && <div>⌨️Keyboard: {p.keyboard}</div>}
+              {p.security && <div>Security: {p.security}</div>}
+              {p.condition && <div>📦Condition: {p.condition}</div>}
+              {p.delivery && <div>🚚Delivery: {p.delivery}</div>}
+              {p.bundle && <div>🎁Bundle: {p.bundle}</div>}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold">💸 Price: {p.price != null ? formatNaira(p.price) : "—"}</span>
+            </div>
+
+            <div className="mt-auto">
+              <a
+                href={waLinkForProduct(p, whatsAppNumber.replace(/[^\d]/g, ""))}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center w-full rounded-lg border px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                title={`WhatsApp: ${whatsAppNumber}`}
+              >
+                Message
+              </a>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
         )}
 
         <div className="mt-8 flex items-center justify-between">
