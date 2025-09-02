@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import ThemeToggle from "../components/ThemeToggle"; // ⬅️ add toggle
+import ThemeToggle from "../components/ThemeToggle";
 
 // ===== Helpers =====
 function formatNaira(n) {
@@ -65,7 +65,7 @@ function ImgWithLoader({ src, alt }) {
   );
 }
 
-// ===== CSV loader hook =====
+// ===== CSV loader hook (still minimal splitter) =====
 function useProductsFromSheet(sheetCsvUrl) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(!!sheetCsvUrl);
@@ -119,16 +119,22 @@ function useProductsFromSheet(sheetCsvUrl) {
   return { products, loading, error };
 }
 
-// ===== WhatsApp helpers =====
+// ===== WhatsApp helpers (includes optional CSV columns) =====
 function productToWhatsAppText(p) {
   const lines = [
     "Hi! I'm interested in this product:",
     `• Name: ${p.name || "—"}`,
     p.brand ? `• Brand: ${p.brand}` : null,
+    p.display ? `• Display: ${p.display}` : null,
     p.cpu ? `• CPU: ${p.cpu}` : null,
     p.ram ? `• RAM: ${p.ram}` : null,
     p.storage ? `• Storage: ${p.storage}` : null,
-    p.gpu ? `• GPU: ${p.gpu}` : null,
+    p.gpu ? `• Graphics: ${p.gpu}` : null,
+    p.keyboard ? `• Keyboard: ${p.keyboard}` : null,
+    p.security ? `• Security: ${p.security}` : null,
+    p.condition ? `• Condition: ${p.condition}` : null,
+    p.delivery ? `• Delivery: ${p.delivery}` : null,
+    p.bundle ? `• Bundle: ${p.bundle}` : null,
     p.price != null ? `• Price: ${formatNaira(p.price)}` : null,
   ].filter(Boolean);
   return encodeURIComponent(lines.join("\n"));
@@ -148,6 +154,7 @@ export default function ProductGrid({
   const { products: sheetItems, loading, error } =
     useProductsFromSheet(sheetCsvUrl);
 
+  // normalize CSV rows -> product shape (with optional columns)
   const sourceItems = (sheetItems && sheetItems.length ? sheetItems : items).map(
     (p) => ({
       id: p.id ?? crypto.randomUUID(),
@@ -161,6 +168,13 @@ export default function ProductGrid({
       storage: p.storage ?? "",
       gpu: p.gpu ?? "",
       category: p.category ?? "",
+      // optional columns from CSV (use safe fallbacks + synonyms)
+      display: p.display ?? p.screen ?? "",
+      keyboard: p.keyboard ?? "",
+      security: p.security ?? "",
+      condition: p.condition ?? "",
+      delivery: p.delivery ?? p.deliver ?? "",
+      bundle: p.bundle ?? p.extras ?? "",
       tags: Array.isArray(p.tags)
         ? p.tags
         : typeof p.tags === "string"
@@ -195,7 +209,6 @@ export default function ProductGrid({
   function goto(p) {
     setPage(Math.min(Math.max(1, p), pages));
   }
-
   function onSearchChange(e) {
     setQ(e.target.value);
     if (page !== 1) setPage(1);
@@ -268,11 +281,18 @@ export default function ProductGrid({
                     )}
                   </div>
 
-                  <div className="min-h-[2.5rem] text-xs text-gray-600 dark:text-gray-400">
+                  {/* Specs from CSV (all optional) */}
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                    {p.display && <div>Display: {p.display}</div>}
                     {p.cpu && <div>CPU: {p.cpu}</div>}
                     {p.ram && <div>RAM: {p.ram}</div>}
                     {p.storage && <div>Storage: {p.storage}</div>}
-                    {p.gpu && <div>GPU: {p.gpu}</div>}
+                    {p.gpu && <div>Graphics: {p.gpu}</div>}
+                    {p.keyboard && <div>Keyboard: {p.keyboard}</div>}
+                    {p.security && <div>Security: {p.security}</div>}
+                    {p.condition && <div>Condition: {p.condition}</div>}
+                    {p.delivery && <div>Delivery: {p.delivery}</div>}
+                    {p.bundle && <div>Bundle: {p.bundle}</div>}
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
