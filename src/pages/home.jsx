@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Laptop, Smartphone, Cable, Tablet } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle"; // adjust path if needed
 
-// --- Minimal Card shim (no external imports/aliases) ---
+// --- Minimal Card shim (now theme-aware) ---
 function Card({ children, className = "" }) {
   return (
-    <div className={`rounded-2xl border bg-white shadow-sm ${className}`}>
+    <div
+      className={
+        "rounded-2xl border bg-white shadow-sm " +
+        "dark:bg-neutral-900 dark:border-neutral-800 " +
+        className
+      }
+    >
       {children}
     </div>
   );
@@ -26,40 +33,47 @@ const tiles = [
     title: "Laptops",
     subtitle: "Ultrabooks • Gaming • Workstations",
     Icon: Laptop,
-    accent: "from-blue-500/20 to-blue-500/0",
+    accent:
+      "from-blue-500/20 to-blue-500/0 dark:from-blue-400/10 dark:to-transparent",
   },
   {
     to: "/phones",
     title: "Phones",
     subtitle: "Android • iPhone • Accessories",
     Icon: Smartphone,
-    accent: "from-emerald-500/20 to-emerald-500/0",
+    accent:
+      "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
   {
     to: "/desktop",
     title: "desktop",
     subtitle: "USB-C • Lightning • HDMI",
     Icon: Cable,
-    accent: "from-amber-500/20 to-amber-500/0",
+    accent:
+      "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
     to: "/tablets",
     title: "Tablets",
     subtitle: "iPad • Android • Stylus",
     Icon: Tablet,
-    accent: "from-purple-500/20 to-purple-500/0",
+    accent:
+      "from-purple-500/20 to-purple-500/0 dark:from-purple-400/10 dark:to-transparent",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
+    <main className="min-h-screen bg-gray-50 text-gray-900 dark:bg-neutral-950 dark:text-gray-100">
       <section className="mx-auto max-w-6xl px-4 py-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Tech Jojo</h1>
-          <p className="text-sm text-gray-500">
-            Pick a category to browse products.
-          </p>
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Tech Jojo</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Pick a category to browse products.
+            </p>
+          </div>
+          <ThemeToggle />
         </header>
 
         {/* Bento Grid */}
@@ -72,17 +86,30 @@ export default function Home() {
                 />
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border bg-gray-50">
+                    <span
+                      className={
+                        "inline-flex h-10 w-10 items-center justify-center rounded-xl border " +
+                        "bg-gray-50 dark:bg-neutral-800 " +
+                        "border-gray-200 dark:border-neutral-700"
+                      }
+                    >
                       <Icon className="h-5 w-5" />
                     </span>
                     {title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex h-24 items-end justify-between">
-                  <p className="max-w-[75%] text-sm text-gray-500">
+                  <p className="max-w-[75%] text-sm text-gray-500 dark:text-gray-400">
                     {subtitle}
                   </p>
-                  <span className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-gray-600 transition group-hover:translate-x-1">
+                  <span
+                    className={
+                      "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs " +
+                      "text-gray-600 dark:text-gray-300 " +
+                      "border-gray-200 dark:border-neutral-700 " +
+                      "transition group-hover:translate-x-1"
+                    }
+                  >
                     Explore
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>

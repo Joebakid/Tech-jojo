@@ -6,19 +6,22 @@ import Phones from "./pages/phones";
 import PageNotFound from "./pages/pageNotFound";
 import Desktop from "./pages/desktop";
 import ScrollToTop from "./components/ScrollToTop";
+import { ThemeProvider } from "./context/ThemeContext";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop /> {/* <- ensures each page starts at top */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/laptops" element={<Laptops />} />
-        <Route path="/phones" element={<Phones />} />
-        <Route path="/desktop" element={<Desktop />} />
-        <Route path="/tablets" element={<Tablets />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/laptops" element={<Laptops />} />
+          <Route path="/phones" element={<Phones />} />
+          <Route path="/desktop" element={<Desktop />} />
+          <Route path="/tablets" element={<Tablets />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
