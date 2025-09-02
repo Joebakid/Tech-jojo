@@ -7,6 +7,7 @@ import PageNotFound from "./pages/pageNotFound";
 import Desktop from "./pages/desktop";
 import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./context/ThemeContext";
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/tablets" element={<Tablets />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        <Footer whatsAppNumber="+234 805 471 7837" />
       </BrowserRouter>
     </ThemeProvider>
   );
