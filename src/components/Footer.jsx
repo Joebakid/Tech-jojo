@@ -1,23 +1,21 @@
 // src/components/Footer.jsx
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 
-// Footer follows the global theme (from ThemeProvider).
-// No toggle here — the page's <ThemeToggle /> controls dark/light for the whole app.
 export default function Footer({
   className = "",
   whatsAppNumber = "+234 805 471 7837",
+  fixed = false, // set to true to always pin to bottom of viewport
 }) {
-  const digits = whatsAppNumber.replace(/[^\d]/g, "");
+  const digits = whatsAppNumber.replace(/[^\d]/g, "")
+  const position = fixed ? "fixed bottom-0 left-0 right-0 z-40" : "mt-auto"
 
   return (
     <footer
-      className={`border-t dark:border-neutral-800 ${className} bg-black`}
+      className={`${position} w-full border-t border-neutral-800 bg-black/95 supports-[backdrop-filter]:bg-black/80 backdrop-blur ${className}`}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 text-sm text-gray-300 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900 dark:text-gray-100">
-            techjojo
-          </span>
+          <span className="font-semibold text-white">techjojo</span>
           <span>© {new Date().getFullYear()}</span>
         </div>
 
@@ -44,11 +42,11 @@ export default function Footer({
           target="_blank"
           rel="noreferrer"
           title={`WhatsApp: ${whatsAppNumber}`}
-          className="inline-flex items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-medium text-gray-700 transition dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+          className="inline-flex items-center justify-center rounded-lg border border-neutral-700 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-neutral-900"
         >
           WhatsApp
         </a>
       </div>
     </footer>
-  );
+  )
 }
