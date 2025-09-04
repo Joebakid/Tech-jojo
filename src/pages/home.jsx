@@ -32,9 +32,9 @@ const tiles = [
     accent: "from-blue-500/20 to-blue-500/0 dark:from-blue-400/10 dark:to-transparent",
   },
   {
-    to: "/phones",
-    title: "Phones",
-    subtitle: "Android • iPhone • Accessories",
+    to: "/Businesslaptop",
+    title: "Business Laptop",
+    subtitle: "Work • iPhone • Accessories",
     Icon: Smartphone,
     accent: "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },

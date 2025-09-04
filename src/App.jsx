@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/home"
 import GamingLaptops from "./pages/laptops"
 import Tablets from "./pages/tablets"
-import Phones from "./pages/phones"
+import BusinessLaptop from "./pages/phones"
 import PageNotFound from "./pages/pageNotFound"
 import Desktop from "./pages/desktop"
 import ScrollToTop from "./components/ScrollToTop"
@@ -19,7 +19,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
-              <Route path="/phones" element={<Phones />} />
+              <Route path="/Businesslaptop" element={<BusinessLaptop />} />
               <Route path="/desktop" element={<Desktop />} />
               <Route path="/tablets" element={<Tablets />} />
               <Route path="*" element={<PageNotFound />} />
