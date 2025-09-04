@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -147,12 +147,15 @@ function waLinkForProduct(p, phoneDigitsOnly) {
 export default function ProductGrid({
   title = "Products",
   items = [],
-  pageSize = 8,
+  pageSize = 3,
   sheetCsvUrl,
   whatsAppNumber = "2348054717837",
 }) {
   const { products: sheetItems, loading, error } =
     useProductsFromSheet(sheetCsvUrl);
+
+  // ref for scrolling to the top of the product section
+  const topRef = useRef(null);
 
   // normalize CSV rows -> product shape (with optional columns)
   const sourceItems = (sheetItems && sheetItems.length ? sheetItems : items).map(
@@ -206,17 +209,62 @@ export default function ProductGrid({
   const start = (pageSafe - 1) * pageSize;
   const current = filtered.slice(start, start + pageSize);
 
+  function scrollToTopOfProducts() {
+    // Smooth scroll to the top of the product section
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Fallback: scroll to top of window
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   function goto(p) {
     setPage(Math.min(Math.max(1, p), pages));
+    scrollToTopOfProducts();
   }
+
   function onSearchChange(e) {
     setQ(e.target.value);
     if (page !== 1) setPage(1);
   }
 
+  // ---- Numbered pagination window (with ellipses) ----
+  const pageItems = useMemo(() => {
+    const items = [];
+    const siblings = 1;
+    const boundaries = 1;
+
+    if (pages <= 1) return [1];
+
+    const startPage = Math.max(
+      boundaries + 1,
+      Math.min(pageSafe - siblings, pages - boundaries - siblings * 2)
+    );
+    const endPage = Math.min(
+      pages - boundaries,
+      Math.max(pageSafe + siblings, boundaries + siblings * 2 + 1)
+    );
+
+    for (let i = 1; i <= Math.min(boundaries, pages); i++) items.push(i);
+    if (startPage > boundaries + 1) items.push("…");
+    for (let i = startPage; i <= endPage; i++) items.push(i);
+    if (endPage < pages - boundaries) items.push("…");
+    for (let i = Math.max(pages - boundaries + 1, boundaries + 1); i <= pages; i++)
+      if (i >= 1) items.push(i);
+
+    return items.filter(
+      (v, i, arr) => v === "…" || (typeof v === "number" && v >= 1 && v <= pages && arr.indexOf(v) === i)
+    );
+  }, [pages, pageSafe]);
+
+  const from = total ? start + 1 : 0;
+  const to = start + current.length;
+
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 dark:bg-neutral-950 dark:text-gray-100">
-      <section className="mx-auto max-w-6xl px-4 py-10">
+      {/* scroll-mt helps if you later use in-page links / sticky headers */}
+      <section ref={topRef} className="mx-auto max-w-6xl px-4 py-10 scroll-mt-24">
         <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Link
@@ -241,7 +289,11 @@ export default function ProductGrid({
               />
               {q && (
                 <button
-                  onClick={() => setQ("")}
+                  onClick={() => {
+                    setQ("");
+                    setPage(1);
+                    scrollToTopOfProducts();
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-800"
                 >
                   Clear
@@ -265,95 +317,109 @@ export default function ProductGrid({
             No products found.
           </div>
         ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {current.map((p) => (
-        <Card key={p.id} className="overflow-hidden transition hover:shadow-lg flex flex-col h-full">
-          <div className="w-full h-48 overflow-hidden">
-            <ImgWithLoader src={p.img} alt={p.name} />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {current.map((p) => (
+              <Card key={p.id} className="overflow-hidden transition hover:shadow-lg flex flex-col h-full">
+                <div className="w-full h-48 overflow-hidden">
+                  <ImgWithLoader src={p.img} alt={p.name} />
+                </div>
+                <div className="flex flex-col p-4 space-y-3 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="line-clamp-1 text-base font-semibold">{p.name}</h3>
+                    {p.brand && (
+                      <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-gray-300 dark:border-neutral-700">
+                        {p.brand}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Specs from CSV (all optional) */}
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5 flex-1">
+                    {p.display && <div>🖥️ Display: {p.display}</div>}
+                    {p.cpu && <div>💻 CPU: {p.cpu}</div>}
+                    {p.ram && <div>🧠 RAM: {p.ram}</div>}
+                    {p.storage && <div>💾 Storage: {p.storage}</div>}
+                    {p.gpu && <div>🎮 Graphics: {p.gpu}</div>}
+                    {p.keyboard && <div>⌨️ Keyboard: {p.keyboard}</div>}
+                    {p.security && <div>Security: {p.security}</div>}
+                    {p.condition && <div>📦 Condition: {p.condition}</div>}
+                    {p.delivery && <div>🚚 Delivery: {p.delivery}</div>}
+                    {p.bundle && <div>🎁 Bundle: {p.bundle}</div>}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold">
+                      💸 Price: {p.price != null ? formatNaira(p.price) : "—"}
+                    </span>
+                  </div>
+
+                  <div className="mt-auto">
+                    <a
+                      href={waLinkForProduct(p, whatsAppNumber.replace(/[^\d]/g, ""))}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center w-full rounded-lg border px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                      title={`WhatsApp: ${whatsAppNumber}`}
+                    >
+                      Message
+                    </a>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
-          <div className="flex flex-col p-4 space-y-3 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="line-clamp-1 text-base font-semibold">{p.name}</h3>
-              {p.brand && (
-                <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-gray-300 dark:border-neutral-700">
-                  {p.brand}
-                </span>
-              )}
-            </div>
-
-            {/* Specs from CSV (all optional) */}
-            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5 flex-1">
-              {p.display && <div>🖥️Display: {p.display}</div>}
-              {p.cpu && <div>💻CPU: {p.cpu}</div>}
-              {p.ram && <div>🧠RAM: {p.ram}</div>}
-              {p.storage && <div>💾Storage: {p.storage}</div>}
-              {p.gpu && <div>🎮Graphics: {p.gpu}</div>}
-              {p.keyboard && <div>⌨️Keyboard: {p.keyboard}</div>}
-              {p.security && <div>Security: {p.security}</div>}
-              {p.condition && <div>📦Condition: {p.condition}</div>}
-              {p.delivery && <div>🚚Delivery: {p.delivery}</div>}
-              {p.bundle && <div>🎁Bundle: {p.bundle}</div>}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold">💸 Price: {p.price != null ? formatNaira(p.price) : "—"}</span>
-            </div>
-
-            <div className="mt-auto">
-              <a
-                href={waLinkForProduct(p, whatsAppNumber.replace(/[^\d]/g, ""))}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center w-full rounded-lg border px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
-                title={`WhatsApp: ${whatsAppNumber}`}
-              >
-                Message
-              </a>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
         )}
 
-        <div className="mt-8 flex items-center justify-between">
+        {/* Numbered pagination */}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Showing <b>{current.length}</b> of <b>{total}</b> item{total === 1 ? "" : "s"}
+            Showing <b>{from}</b>–<b>{to}</b> of <b>{total}</b> item{total === 1 ? "" : "s"}
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => goto(1)}
-              disabled={pageSafe === 1}
-              className="rounded-lg border px-2 py-1 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
-            >
-              « First
-            </button>
+          <nav className="flex items-center gap-1" aria-label="Pagination">
             <button
               onClick={() => goto(pageSafe - 1)}
               disabled={pageSafe === 1}
-              className="rounded-lg border px-2 py-1 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              className="rounded-lg border px-2.5 py-1.5 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              title="Previous"
             >
-              ‹ Prev
+              ‹
             </button>
-            <span className="px-2 text-xs text-gray-700 dark:text-gray-300">
-              Page <b>{pageSafe}</b> / <b>{pages}</b>
-            </span>
+
+            {pageItems.map((it, idx) =>
+              it === "…" ? (
+                <span
+                  key={`dots-${idx}`}
+                  className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400 select-none"
+                >
+                  …
+                </span>
+              ) : (
+                <button
+                  key={it}
+                  onClick={() => goto(it)}
+                  aria-current={it === pageSafe ? "page" : undefined}
+                  className={
+                    "rounded-lg border px-3 py-1.5 text-xs transition " +
+                    (it === pageSafe
+                      ? "bg-gray-900 text-white border-gray-900 dark:bg-neutral-100 dark:text-neutral-900 dark:border-neutral-100"
+                      : "hover:bg-gray-100 dark:border-neutral-700 dark:hover:bg-neutral-800")
+                  }
+                >
+                  {it}
+                </button>
+              )
+            )}
+
             <button
               onClick={() => goto(pageSafe + 1)}
               disabled={pageSafe === pages}
-              className="rounded-lg border px-2 py-1 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              className="rounded-lg border px-2.5 py-1.5 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              title="Next"
             >
-              Next ›
+              ›
             </button>
-            <button
-              onClick={() => goto(pages)}
-              disabled={pageSafe === pages}
-              className="rounded-lg border px-2 py-1 text-xs disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
-            >
-              Last »
-            </button>
-          </div>
+          </nav>
         </div>
       </section>
     </main>

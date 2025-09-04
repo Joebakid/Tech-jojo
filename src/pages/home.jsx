@@ -25,8 +25,8 @@ function CardContent({ children, className = "" }) {
 
 const tiles = [
   {
-    to: "/laptops",
-    title: "Laptops",
+    to: "/GamingLaptops",
+    title: "Gaming Laptops",
     subtitle: "Ultrabooks • Gaming • Workstations",
     Icon: Laptop,
     accent: "from-blue-500/20 to-blue-500/0 dark:from-blue-400/10 dark:to-transparent",
@@ -46,7 +46,7 @@ const tiles = [
     accent: "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
-    to: "/tablets",
+    to: "/business laptop",
     title: "Tablets",
     subtitle: "iPad • Android • Stylus",
     Icon: Tablet,

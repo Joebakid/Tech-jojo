@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/home"
-import Laptops from "./pages/laptops"
+import GamingLaptops from "./pages/laptops"
 import Tablets from "./pages/tablets"
 import Phones from "./pages/phones"
 import PageNotFound from "./pages/pageNotFound"
@@ -18,7 +18,7 @@ export default function App() {
           <main className="flex-grow overflow-auto">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/laptops" element={<Laptops />} />
+              <Route path="/gaminglaptops" element={<GamingLaptops />} />
               <Route path="/phones" element={<Phones />} />
               <Route path="/desktop" element={<Desktop />} />
               <Route path="/tablets" element={<Tablets />} />
