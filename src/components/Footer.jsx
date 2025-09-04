@@ -23,11 +23,11 @@ export default function Footer({
           <Link to="/" className="hover:underline">
             Home
           </Link>
-          <Link to="/laptops" className="hover:underline">
-            Laptops
+          <Link to="/GamingLaptops" className="hover:underline">
+            Gaming Laptop
           </Link>
-          <Link to="/phones" className="hover:underline">
-            Phones
+          <Link to="/Businesslaptop" className="hover:underline">
+            Business Laptop
           </Link>
           <Link to="/tablets" className="hover:underline">
             Tablets
@@ -50,3 +50,5 @@ export default function Footer({
     </footer>
   )
 }
+
+ 
