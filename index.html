@@ -2,9 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
-    <!-- SEO meta tags -->
+    <!-- Primary SEO -->
     <title>Tech Jojo | Gadgets & Tech in Lagos, Nigeria</title>
     <meta
       name="description"
@@ -15,8 +18,10 @@
       content="Tech Jojo, gadgets Lagos Nigeria, buy laptops, phones, computers, tech accessories"
     />
     <meta name="author" content="Tech Jojo" />
+    <link rel="canonical" href="https://techjojo.com/" />
 
-    <!-- Open Graph for social sharing -->
+    <!-- Open Graph (used by WhatsApp, Facebook, etc.) -->
+    <meta property="og:site_name" content="Tech Jojo" />
     <meta
       property="og:title"
       content="Tech Jojo | Gadgets & Tech in Lagos, Nigeria"
@@ -26,11 +31,30 @@
       content="Shop gadgets, laptops, phones, and accessories with Tech Jojo — a trusted tech firm located in Lagos, Nigeria."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://techjojo.com" />
-    <meta property="og:image" content="/logo.png" />
+    <meta property="og:url" content="https://techjojo.com/" />
+    <!-- IMPORTANT: absolute URL to an image in /public -->
+    <meta property="og:image" content="https://techjojo.com/1001529661.jpg" />
+    <meta property="og:image:secure_url" content="https://techjojo.com/1001529661.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Tech Jojo logo" />
 
-    <!-- Favicon (replace logo.png with your actual logo) -->
-    <link rel="icon" type="image/png" href="/public/1001529661.jpg" />
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@techjojo" />
+    <meta name="twitter:title" content="Tech Jojo | Gadgets & Tech in Lagos, Nigeria" />
+    <meta name="twitter:description" content="Shop gadgets, laptops, phones, and accessories with Tech Jojo — a trusted tech firm located in Lagos, Nigeria." />
+    <meta name="twitter:image" content="https://techjojo.com/1001529661.jpg" />
+    <meta name="twitter:image:alt" content="Tech Jojo logo" />
+
+    <!-- Icons (files placed in /public; referenced from root) -->
+    <link rel="icon" type="image/png" href="/1001529661.jpg" />
+    <link rel="apple-touch-icon" href="/1001529661.jpg" />
+    <meta name="theme-color" content="#111827" />
+
+    <!-- Optional: PWA manifest if you add one to /public -->
+    <!-- <link rel="manifest" href="/manifest.webmanifest" /> -->
   </head>
   <body class="min-h-screen bg-white text-gray-900">
     <div id="root"></div>
