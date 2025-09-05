@@ -5,6 +5,7 @@ import Monitor from "./pages/monitor"
 import BusinessLaptop from "./pages/businesslaptop"
 import PageNotFound from "./pages/pageNotFound"
 import Desktop from "./pages/desktop"
+import GamingAccessories from "./pages/gamingAccesories"
 import ScrollToTop from "./components/ScrollToTop"
 import { ThemeProvider } from "./context/ThemeContext"
 import Footer from "./components/Footer"
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="/Businesslaptop" element={<BusinessLaptop />} />
               <Route path="/desktop" element={<Desktop />} />
               <Route path="/Monitor" element={<Monitor />} />
+              <Route path="/GamingAccessories" element={<GamingAccessories />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </main>

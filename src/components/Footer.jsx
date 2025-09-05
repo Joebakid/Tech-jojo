@@ -29,8 +29,11 @@ export default function Footer({
           <Link to="/Businesslaptop" className="hover:underline">
             Business Laptop
           </Link>
-          <Link to="/tablets" className="hover:underline">
-            Tablets
+          <Link to="/Monitor" className="hover:underline">
+           Monitor
+          </Link>
+          <Link to="/desktop" className="hover:underline">
+            Desktop
           </Link>
           <Link to="/desktop" className="hover:underline">
             Desktop

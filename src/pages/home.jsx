@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { ArrowRight, Laptop, Smartphone, Cable, Tablet } from "lucide-react"
+import { ArrowRight, Laptop, Smartphone, Cable, Tablet , Gamepad2, TvIcon} from "lucide-react"
 import ThemeToggle from "../components/ThemeToggle" // adjust path if needed
 
 // --- Minimal Card shim (now theme-aware) ---
@@ -51,8 +51,16 @@ const tiles = [
     title: "monitors",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Samsung • AoC • High Refresh Rate",
-    Icon: Tablet,
+    Icon: TvIcon,
     accent: "from-purple-500/20 to-purple-500/0 dark:from-purple-400/10 dark:to-transparent",
+  },
+  {
+    to: "/GamingAccessories",
+    title: "gaming Accesories",
+    // Samsung ° AoC ° High Refresh Rate
+    subtitle: "Joystick • Xbox controller • Gaming Mouse",
+    Icon: Gamepad2,
+    accent: "from-yellow-900/20 to-emerald-500/0 dark:from-green-100/10 dark:to-transparent",
   },
 ]
 
