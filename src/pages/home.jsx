@@ -58,7 +58,7 @@ const tiles = [
     to: "/GamingAccessories",
     title: "gaming accesories",
     // Samsung ° AoC ° High Refresh Rate
-    subtitle: "Joystick • Xbox controller • Gaming Mouse",
+    subtitle: "Keyboard • Mouse •  Headset",
     Icon: Gamepad2,
     accent: "from-yellow-900/20 to-emerald-500/0 dark:from-green-100/10 dark:to-transparent",
   },
