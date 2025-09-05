@@ -26,7 +26,7 @@ function CardContent({ children, className = "" }) {
 const tiles = [
   {
     to: "/GamingLaptops",
-    title: "gaming Laptops",
+    title: "gaming laptops",
     // Intel ° Nvidia ° RGB
     subtitle: "Intel • Nvidia • RGB",
     Icon: Laptop,
@@ -34,20 +34,20 @@ const tiles = [
   },
   {
     to: "/Businesslaptop",
-    title: "business Laptop",
+    title: "business laptops",
     subtitle: "HP •  Dell • Lenovo",
     Icon: Smartphone,
     accent: "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
   {
     to: "/desktop",
-    title: "desktop",
+    title: "desktops",
     subtitle: "Towers • All-in-Ones • Mini PCs",
     Icon: Cable,
     accent: "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
-    to: "/Monitor ",
+    to: "/Monitor",
     title: "monitors",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Samsung • AoC • High Refresh Rate",

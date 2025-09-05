@@ -7,7 +7,7 @@ export default function Laptops() {
     <>
       
     <ProductGrid
-      title="Desktop"
+      title="Desktops"
       pageSize={8}
       sheetCsvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vRbJAPJ_vCpSy2BECqmClWuCuxViYz_ms9r_BinNogvCpxDGvV8MStrMU72UqATCZgRLMnBo-GhJE-c/pub?gid=0&single=true&output=csv"
       whatsAppNumber="+234 805 471 7837"
