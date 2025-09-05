@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 export default function Footer({
   className = "",
   whatsAppNumber = "+234 805 471 7837",
-  fixed = true, // (kept as-is from your code)
+  fixed = true,
 }) {
   const digits = whatsAppNumber.replace(/[^\d]/g, "");
   const position = fixed ? " " : "mt-auto";
@@ -20,20 +20,40 @@ export default function Footer({
           <span>© {new Date().getFullYear()}</span>
         </div>
 
+        {/* Techy mixed-font nav */}
         <nav className="flex flex-wrap items-center gap-4">
-          <Link to="/GamingLaptops" className="hover:underline">
+          <Link
+            to="/GamingLaptops"
+            className="font-orbitron uppercase tracking-wider hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)] transition"
+          >
             Gaming Laptop
           </Link>
-          <Link to="/Businesslaptop" className="hover:underline">
+
+          <Link
+            to="/Businesslaptop"
+            className="font-jetbrains hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)] transition"
+          >
             Business Laptop
           </Link>
-          <Link to="/desktop" className="hover:underline">
+
+          <Link
+            to="/desktop"
+            className="font-rajdhani uppercase tracking-wide hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)] transition"
+          >
             Desktop
           </Link>
-          <Link to="/Monitor" className="hover:underline">
+
+          <Link
+            to="/Monitor"
+            className="font-exo2 uppercase tracking-wider hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)] transition"
+          >
             Monitor
           </Link>
-          <Link to="/GamingAccessories" className="hover:underline">
+
+          <Link
+            to="/GamingAccessories"
+            className="font-jetbrains hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)] transition"
+          >
             Gaming accessories
           </Link>
         </nav>
@@ -49,7 +69,6 @@ export default function Footer({
             WhatsApp
           </a>
 
-          {/* Pretty "Made by" pill */}
           <a
             href="https://www.josephbawo.tech/"
             target="_blank"
