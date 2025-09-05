@@ -9,7 +9,7 @@ export default function Laptops() {
     <ProductGrid
       title="desktops"
       pageSize={8}
-      sheetCsvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vRbJAPJ_vCpSy2BECqmClWuCuxViYz_ms9r_BinNogvCpxDGvV8MStrMU72UqATCZgRLMnBo-GhJE-c/pub?gid=0&single=true&output=csv"
+      sheetCsvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vSPuCdo6sGWyH86QZWQLNZLA7Ybd4x_KoxBLLpo0qdZjAlgkvuunJaP8hp_ELQHy5sT_4BG61C0SrIu/pub?output=csv"
       whatsAppNumber="+234 805 471 7837"
     />
     </>
