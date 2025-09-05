@@ -20,23 +20,22 @@ export default function Footer({
         </div>
 
         <nav className="flex flex-wrap items-center gap-4">
-          <Link to="/" className="hover:underline">
-            Home
-          </Link>
+          
           <Link to="/GamingLaptops" className="hover:underline">
             Gaming Laptop
           </Link>
           <Link to="/Businesslaptop" className="hover:underline">
             Business Laptop
           </Link>
+           <Link to="/desktop" className="hover:underline">
+            Desktop
+          </Link>
           <Link to="/Monitor" className="hover:underline">
            Monitor
           </Link>
-          <Link to="/desktop" className="hover:underline">
-            Desktop
-          </Link>
-          <Link to="/desktop" className="hover:underline">
-            Desktop
+         
+          <Link to="/GamingAccessories" className="hover:underline">
+            Gaming Accessories
           </Link>
         </nav>
 
