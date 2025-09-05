@@ -419,7 +419,8 @@ export default function ProductGrid({
             </Link>
             <h1 className="mt-2 text-3xl font-bold">{title}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {sheetCsvUrl ? "Live products from Google Sheets." : "Static list."}
+              {/* {sheetCsvUrl ? "Live products from Google Sheets." : "Static list."} */}
+              Browse through our catalogue
             </p>
           </div>
 
