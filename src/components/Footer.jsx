@@ -35,7 +35,7 @@ export default function Footer({
           </Link>
          
           <Link to="/GamingAccessories" className="hover:underline">
-            Gaming Accessories
+            Gaming accessories
           </Link>
         </nav>
 

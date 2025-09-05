@@ -56,7 +56,7 @@ const tiles = [
   },
   {
     to: "/GamingAccessories",
-    title: "gaming Accesories",
+    title: "gaming accesories",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Joystick • Xbox controller • Gaming Mouse",
     Icon: Gamepad2,
