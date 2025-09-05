@@ -1,14 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Home from "./pages/home"
-import GamingLaptops from "./pages/gamingLaptop"
-import Monitor from "./pages/monitor"
-import BusinessLaptop from "./pages/businesslaptop"
-import PageNotFound from "./pages/pageNotFound"
-import Desktop from "./pages/desktop"
-import GamingAccessories from "./pages/gamingAccesories"
-import ScrollToTop from "./components/ScrollToTop"
-import { ThemeProvider } from "./context/ThemeContext"
-import Footer from "./components/Footer"
+// src/App.jsx (or App.js)
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/home";
+import GamingLaptops from "./pages/gamingLaptop";
+import Monitor from "./pages/monitor";
+import BusinessLaptop from "./pages/businesslaptop";
+import PageNotFound from "./pages/pageNotFound";
+import Desktop from "./pages/desktop";
+import GamingAccessories from "./pages/gamingAccesories";
+import ScrollToTop from "./components/ScrollToTop";
+import { ThemeProvider } from "./context/ThemeContext";
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -16,7 +17,8 @@ export default function App() {
       <BrowserRouter>
         <ScrollToTop />
         <div className="h-screen flex flex-col">
-          <main className="flex-grow overflow-auto">
+          {/* Give your scrollable area an id so ScrollToTop can target it */}
+          <main id="app-scroll" className="flex-grow overflow-auto">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
@@ -31,5 +33,5 @@ export default function App() {
         </div>
       </BrowserRouter>
     </ThemeProvider>
-  )
+  );
 }
