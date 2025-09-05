@@ -121,7 +121,7 @@ function ImagePreview({ src, alt, onClose }) {
   );
 }
 
-// ===== CSV loader hook (still minimal splitter) =====
+// ===== CSV loader hook =====
 function useProductsFromSheet(sheetCsvUrl) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(!!sheetCsvUrl);
@@ -175,7 +175,7 @@ function useProductsFromSheet(sheetCsvUrl) {
   return { products, loading, error };
 }
 
-// ===== WhatsApp helpers (includes optional CSV columns) =====
+// ===== WhatsApp helpers =====
 function productToWhatsAppText(p) {
   const lines = [
     "Hi! I'm interested in this product:",
@@ -212,7 +212,7 @@ export default function ProductGrid({
 
   // image preview modal state
   const [previewSrc, setPreviewSrc] = useState("");
-  const [previewAlt, setPreviewAlt] = useState("");
+  const [previewAlt, setPreviewAlt] = useState(""); // <-- fixed
   const closePreview = () => {
     setPreviewSrc("");
     setPreviewAlt("");
@@ -235,7 +235,6 @@ export default function ProductGrid({
       storage: p.storage ?? "",
       gpu: p.gpu ?? "",
       category: p.category ?? "",
-      // optional columns from CSV (use safe fallbacks + synonyms)
       display: p.display ?? p.screen ?? "",
       keyboard: p.keyboard ?? "",
       security: p.security ?? "",
@@ -253,7 +252,59 @@ export default function ProductGrid({
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
-  // spec filters (compact)
+  // --------- AUTO FACETS from data ----------
+  const SPEC_KEYS = [
+    "display",
+    "cpu",
+    "ram",
+    "storage",
+    "gpu",
+    "keyboard",
+    "condition",
+    "delivery",
+    "bundle",
+  ];
+
+  const LABELS = {
+    display: "Display",
+    cpu: "CPU",
+    ram: "RAM",
+    storage: "Storage",
+    gpu: "Graphics",
+    keyboard: "Keyboard",
+    condition: "Condition",
+    delivery: "Delivery",
+    bundle: "Bundle",
+  };
+
+  const facets = useMemo(() => {
+    // Build unique value lists (case-insensitive dedupe), with counts
+    const maps = Object.fromEntries(
+      SPEC_KEYS.map((k) => [k, new Map()]) // normValue -> {label,count}
+    );
+    for (const it of sourceItems) {
+      for (const key of SPEC_KEYS) {
+        const raw = (it[key] ?? "").trim();
+        if (!raw) continue;
+        const norm = normalize(raw);
+        const entry = maps[key].get(norm);
+        if (entry) entry.count += 1;
+        else maps[key].set(norm, { label: raw, count: 1 });
+      }
+    }
+    // Convert to sorted arrays (by count desc, then label)
+    const out = {};
+    for (const key of SPEC_KEYS) {
+      const arr = Array.from(maps[key].values())
+        .sort((a, b) => (b.count - a.count) || a.label.localeCompare(b.label))
+        .map((v) => v.label);
+      // Hide facets with <2 options (or 0)
+      out[key] = arr.length > 1 ? arr : [];
+    }
+    return out;
+  }, [sourceItems]);
+
+  // spec filters (select values)
   const [filters, setFilters] = useState({
     display: "",
     cpu: "",
@@ -266,16 +317,8 @@ export default function ProductGrid({
     bundle: "",
   });
 
-  // filters collapsible (default collapsed to save space)
+  // filters collapsible
   const [filtersOpen, setFiltersOpen] = useState(false);
-  useEffect(() => {
-    try {
-      // If on very small screens, keep collapsed; on larger, you can open if you prefer:
-      if (window.matchMedia && !window.matchMedia("(max-width: 640px)").matches) {
-        // leave as default collapsed = false? keep collapsed for minimal footprint
-      }
-    } catch {}
-  }, []);
 
   const onSpecChange = (key, value) =>
     setFilters((f) => ({ ...f, [key]: value }));
@@ -294,8 +337,8 @@ export default function ProductGrid({
     });
 
   const activeFiltersCount = useMemo(
-    () => Object.values(filters).filter((v) => String(v).trim().length > 0).length,
-    [filters]
+    () => Object.entries(filters).filter(([k, v]) => v && facets[k]?.length).length,
+    [filters, facets]
   );
 
   useEffect(() => {
@@ -306,7 +349,7 @@ export default function ProductGrid({
   const filtered = useMemo(() => {
     const needle = normalize(q);
     return sourceItems.filter((p) => {
-      // broad search includes specs too
+      // broad text search (includes specs)
       const searchMatch =
         !needle ||
         [
@@ -328,17 +371,18 @@ export default function ProductGrid({
           .join(" ")
           .includes(needle);
 
-      // spec filters (all filled fields must match)
+      // spec filters (exact match on selected option, case-insensitive)
       const specsMatch = Object.entries(filters).every(([key, val]) => {
-        const qv = normalize(val);
-        if (!qv) return true;
-        return normalize(p[key]).includes(qv);
+        if (!val) return true; // not filtering this key
+        if (!facets[key]?.length) return true; // facet not active for this dataset
+        return normalize(p[key]) === normalize(val);
       });
 
       return searchMatch && specsMatch;
     });
-  }, [sourceItems, q, filters]);
+  }, [sourceItems, q, filters, facets]);
 
+  // ---- Pagination derived values (SINGLE state: page/setPage) ----
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const pageSafe = Math.min(page, pages);
@@ -384,11 +428,7 @@ export default function ProductGrid({
     if (startPage > boundaries + 1) items.push("…");
     for (let i = startPage; i <= endPage; i++) items.push(i);
     if (endPage < pages - boundaries) items.push("…");
-    for (
-      let i = Math.max(pages - boundaries + 1, boundaries + 1);
-      i <= pages;
-      i++
-    )
+    for (let i = Math.max(pages - boundaries + 1, boundaries + 1); i <= pages; i++)
       if (i >= 1) items.push(i);
 
     return items.filter(
@@ -418,10 +458,7 @@ export default function ProductGrid({
               ← Home
             </Link>
             <h1 className="mt-2 text-3xl font-bold">{title}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {/* {sheetCsvUrl ? "Live products from Google Sheets." : "Static list."} */}
-              Browse through our catalogue
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Browse through our catalogue</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -445,7 +482,7 @@ export default function ProductGrid({
           </div>
         </header>
 
-        {/* Spec Filters (compact + collapsible) */}
+        {/* Spec Filters (auto facets + collapsible) */}
         <Card className="mb-4 p-3">
           <div className="flex items-center justify-between">
             <button
@@ -476,60 +513,17 @@ export default function ProductGrid({
 
           {filtersOpen && (
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <SpecInput
-                label="Display"
-                value={filters.display}
-                onChange={(v) => onSpecChange("display", v)}
-                placeholder='e.g. 14" HD'
-              />
-              <SpecInput
-                label="CPU"
-                value={filters.cpu}
-                onChange={(v) => onSpecChange("cpu", v)}
-                placeholder="e.g. Intel Celeron N2840"
-              />
-              <SpecInput
-                label="RAM"
-                value={filters.ram}
-                onChange={(v) => onSpecChange("ram", v)}
-                placeholder="e.g. 4GB"
-              />
-              <SpecInput
-                label="Storage"
-                value={filters.storage}
-                onChange={(v) => onSpecChange("storage", v)}
-                placeholder="e.g. 250GB HDD"
-              />
-              <SpecInput
-                label="Graphics"
-                value={filters.gpu}
-                onChange={(v) => onSpecChange("gpu", v)}
-                placeholder="e.g. Intel HD Graphics"
-              />
-              <SpecInput
-                label="Keyboard"
-                value={filters.keyboard}
-                onChange={(v) => onSpecChange("keyboard", v)}
-                placeholder="e.g. Non-backlit"
-              />
-              <SpecInput
-                label="Condition"
-                value={filters.condition}
-                onChange={(v) => onSpecChange("condition", v)}
-                placeholder="e.g. Grade A Foreign Used"
-              />
-              <SpecInput
-                label="Delivery"
-                value={filters.delivery}
-                onChange={(v) => onSpecChange("delivery", v)}
-                placeholder="e.g. Free Nationwide Delivery"
-              />
-              <SpecInput
-                label="Bundle"
-                value={filters.bundle}
-                onChange={(v) => onSpecChange("bundle", v)}
-                placeholder="e.g. Laptop"
-              />
+              {["display","cpu","ram","storage","gpu","keyboard","condition","delivery","bundle"].map((key) =>
+                facets[key] && facets[key].length > 0 ? (
+                  <SpecSelect
+                    key={key}
+                    label={LABELS[key]}
+                    value={filters[key]}
+                    options={facets[key]}
+                    onChange={(v) => onSpecChange(key, v)}
+                  />
+                ) : null
+              )}
             </div>
           )}
         </Card>
@@ -668,17 +662,23 @@ export default function ProductGrid({
   );
 }
 
-/** Small input component for spec filters (compact) */
-function SpecInput({ label, value, onChange, placeholder }) {
+/** Select component for spec filters (auto options) */
+function SpecSelect({ label, value, options, onChange }) {
   return (
     <label className="flex flex-col gap-1 text-[11px]">
       <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-      <input
+      <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-md border bg-white px-3 py-1.5 text-xs outline-none ring-0 transition focus:border-gray-400 placeholder:text-gray-400 dark:bg-neutral-900 dark:border-neutral-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-neutral-500"
-      />
+        className="w-full rounded-md border bg-white px-3 py-1.5 text-xs outline-none ring-0 transition focus:border-gray-400 dark:bg-neutral-900 dark:border-neutral-700 dark:text-gray-100 dark:focus:border-neutral-500"
+      >
+        <option value="">Any</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 export default function Footer({
   className = "",
   whatsAppNumber = "+234 805 471 7837",
-  fixed = false, // set to true to always pin to bottom of viewport
+  fixed = true, // set to true to always pin to bottom of viewport
 }) {
   const digits = whatsAppNumber.replace(/[^\d]/g, "")
   const position = fixed ? "fixed bottom-0 left-0 right-0 z-40" : "mt-auto"
