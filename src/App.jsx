@@ -1,5 +1,5 @@
-// src/App.jsx (or App.js)
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";  
 import Home from "./pages/home";
 import GamingLaptops from "./pages/gamingLaptop";
 import Monitor from "./pages/monitor";
@@ -15,9 +15,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <Analytics />           
         <ScrollToTop />
         <div className="h-screen flex flex-col">
-          {/* Give your scrollable area an id so ScrollToTop can target it */}
           <main id="app-scroll" className="flex-grow overflow-auto">
             <Routes>
               <Route path="/" element={<Home />} />
