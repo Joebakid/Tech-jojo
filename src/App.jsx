@@ -1,5 +1,6 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";  
+import { Analytics } from "@vercel/analytics/react";
 import Home from "./pages/home";
 import GamingLaptops from "./pages/gamingLaptop";
 import Monitor from "./pages/monitor";
@@ -15,10 +16,11 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Analytics />           
+        <Analytics />
         <ScrollToTop />
-        <div className="h-screen flex flex-col">
-          <main id="app-scroll" className="flex-grow overflow-auto">
+        {/* Let the whole page scroll; footer sits at bottom when short */}
+        <div className="min-h-screen flex flex-col">  {/* was h-screen */}
+          <main className="flex-1">                  {/* removed id + overflow-auto */}
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
@@ -29,6 +31,8 @@ export default function App() {
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </main>
+
+          {/* Footer is after main, so it’s at the bottom but NOT fixed */}
           <Footer whatsAppNumber="+234 805 471 7837" />
         </div>
       </BrowserRouter>
