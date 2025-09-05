@@ -1,13 +1,14 @@
 // src/components/Footer.jsx
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 
 export default function Footer({
   className = "",
   whatsAppNumber = "+234 805 471 7837",
-  fixed = true, // set to true to always pin to bottom of viewport
+  fixed = true, // (kept as-is from your code)
 }) {
-  const digits = whatsAppNumber.replace(/[^\d]/g, "")
-  const position = fixed ? " " : "mt-auto"
+  const digits = whatsAppNumber.replace(/[^\d]/g, "");
+  const position = fixed ? " " : "mt-auto";
 
   return (
     <footer
@@ -20,37 +21,50 @@ export default function Footer({
         </div>
 
         <nav className="flex flex-wrap items-center gap-4">
-          
           <Link to="/GamingLaptops" className="hover:underline">
             Gaming Laptop
           </Link>
           <Link to="/Businesslaptop" className="hover:underline">
             Business Laptop
           </Link>
-           <Link to="/desktop" className="hover:underline">
+          <Link to="/desktop" className="hover:underline">
             Desktop
           </Link>
           <Link to="/Monitor" className="hover:underline">
-           Monitor
+            Monitor
           </Link>
-         
           <Link to="/GamingAccessories" className="hover:underline">
             Gaming accessories
           </Link>
         </nav>
 
-        <a
-          href={`https://wa.me/${digits}`}
-          target="_blank"
-          rel="noreferrer"
-          title={`WhatsApp: ${whatsAppNumber}`}
-          className="inline-flex items-center justify-center rounded-lg border border-neutral-700 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-neutral-900"
-        >
-          WhatsApp
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href={`https://wa.me/${digits}`}
+            target="_blank"
+            rel="noreferrer"
+            title={`WhatsApp: ${whatsAppNumber}`}
+            className="inline-flex items-center justify-center rounded-lg border border-neutral-700 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-neutral-900"
+          >
+            WhatsApp
+          </a>
+
+          {/* Pretty "Made by" pill */}
+          <a
+            href="https://www.josephbawo.tech/"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Visit Joseph Bawo's website"
+            className="group inline-flex items-center gap-2 rounded-full border border-neutral-700/60 bg-neutral-900/40 px-3 py-1.5 text-xs text-gray-300 transition hover:bg-neutral-900 hover:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-700"
+          >
+            <span className="opacity-80 group-hover:opacity-100">Made by</span>
+            <span className="font-semibold bg-gradient-to-r from-purple-400 to-sky-400 bg-clip-text text-transparent">
+              Joseph Bawo
+            </span>
+            <ExternalLink className="h-3.5 w-3.5 opacity-50 group-hover:opacity-90" />
+          </a>
+        </div>
       </div>
     </footer>
-  )
+  );
 }
-
- 
