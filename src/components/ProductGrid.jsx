@@ -1,5 +1,7 @@
+// src/components/ProductGrid.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { X, ChevronDown } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 
 // ===== Helpers =====
@@ -27,6 +29,14 @@ function Card({ children, className = "" }) {
       {children}
     </div>
   );
+}
+
+/** Normalize strings for forgiving matching (case/punctuation insensitive) */
+function normalize(v) {
+  return String(v || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 /** Image with spinner + error fallback */
@@ -61,6 +71,52 @@ function ImgWithLoader({ src, alt }) {
         }`}
         loading="lazy"
       />
+    </div>
+  );
+}
+
+/** Centered modal for image preview */
+function ImagePreview({ src, alt, onClose }) {
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    // prevent body scroll while open
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  if (!src) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={onClose}
+    >
+      <div
+        className="relative max-h-[85vh] max-w-[92vw]"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-3 -right-3 rounded-full bg-white p-1 shadow dark:bg-neutral-900"
+          title="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <img
+          src={src}
+          alt={alt || "Preview"}
+          className="max-h-[85vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
+        />
+      </div>
     </div>
   );
 }
@@ -154,6 +210,14 @@ export default function ProductGrid({
   const { products: sheetItems, loading, error } =
     useProductsFromSheet(sheetCsvUrl);
 
+  // image preview modal state
+  const [previewSrc, setPreviewSrc] = useState("");
+  const [previewAlt, setPreviewAlt] = useState("");
+  const closePreview = () => {
+    setPreviewSrc("");
+    setPreviewAlt("");
+  };
+
   // ref for scrolling to the top of the product section
   const topRef = useRef(null);
 
@@ -189,19 +253,91 @@ export default function ProductGrid({
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    if (!needle) return sourceItems;
-    return sourceItems.filter((p) => {
-      const inName = (p.name || "").toLowerCase().includes(needle);
-      const inBrand = (p.brand || "").toLowerCase().includes(needle);
-      const inCat = (p.category || "").toLowerCase().includes(needle);
-      const inTags =
-        Array.isArray(p.tags) &&
-        p.tags.join(" ").toLowerCase().includes(needle);
-      return inName || inBrand || inCat || inTags;
+  // spec filters (compact)
+  const [filters, setFilters] = useState({
+    display: "",
+    cpu: "",
+    ram: "",
+    storage: "",
+    gpu: "",
+    keyboard: "",
+    condition: "",
+    delivery: "",
+    bundle: "",
+  });
+
+  // filters collapsible (default collapsed to save space)
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    try {
+      // If on very small screens, keep collapsed; on larger, you can open if you prefer:
+      if (window.matchMedia && !window.matchMedia("(max-width: 640px)").matches) {
+        // leave as default collapsed = false? keep collapsed for minimal footprint
+      }
+    } catch {}
+  }, []);
+
+  const onSpecChange = (key, value) =>
+    setFilters((f) => ({ ...f, [key]: value }));
+
+  const clearSpecs = () =>
+    setFilters({
+      display: "",
+      cpu: "",
+      ram: "",
+      storage: "",
+      gpu: "",
+      keyboard: "",
+      condition: "",
+      delivery: "",
+      bundle: "",
     });
-  }, [sourceItems, q]);
+
+  const activeFiltersCount = useMemo(
+    () => Object.values(filters).filter((v) => String(v).trim().length > 0).length,
+    [filters]
+  );
+
+  useEffect(() => {
+    // Reset to first page when filters/search change
+    setPage(1);
+  }, [q, filters]);
+
+  const filtered = useMemo(() => {
+    const needle = normalize(q);
+    return sourceItems.filter((p) => {
+      // broad search includes specs too
+      const searchMatch =
+        !needle ||
+        [
+          p.name,
+          p.brand,
+          p.category,
+          p.display,
+          p.cpu,
+          p.ram,
+          p.storage,
+          p.gpu,
+          p.keyboard,
+          p.condition,
+          p.delivery,
+          p.bundle,
+          Array.isArray(p.tags) ? p.tags.join(" ") : "",
+        ]
+          .map(normalize)
+          .join(" ")
+          .includes(needle);
+
+      // spec filters (all filled fields must match)
+      const specsMatch = Object.entries(filters).every(([key, val]) => {
+        const qv = normalize(val);
+        if (!qv) return true;
+        return normalize(p[key]).includes(qv);
+      });
+
+      return searchMatch && specsMatch;
+    });
+  }, [sourceItems, q, filters]);
 
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -210,23 +346,21 @@ export default function ProductGrid({
   const current = filtered.slice(start, start + pageSize);
 
   function scrollToTopOfProducts() {
-    // Smooth scroll to the top of the product section
     if (topRef.current) {
       topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
-      // Fallback: scroll to top of window
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
   function goto(p) {
-    setPage(Math.min(Math.max(1, p), pages));
+    const next = Math.min(Math.max(1, p), pages);
+    setPage(next);
     scrollToTopOfProducts();
   }
 
   function onSearchChange(e) {
     setQ(e.target.value);
-    if (page !== 1) setPage(1);
   }
 
   // ---- Numbered pagination window (with ellipses) ----
@@ -250,11 +384,16 @@ export default function ProductGrid({
     if (startPage > boundaries + 1) items.push("…");
     for (let i = startPage; i <= endPage; i++) items.push(i);
     if (endPage < pages - boundaries) items.push("…");
-    for (let i = Math.max(pages - boundaries + 1, boundaries + 1); i <= pages; i++)
+    for (
+      let i = Math.max(pages - boundaries + 1, boundaries + 1);
+      i <= pages;
+      i++
+    )
       if (i >= 1) items.push(i);
 
     return items.filter(
-      (v, i, arr) => v === "…" || (typeof v === "number" && v >= 1 && v <= pages && arr.indexOf(v) === i)
+      (v, i, arr) =>
+        v === "…" || (typeof v === "number" && v >= 1 && v <= pages && arr.indexOf(v) === i)
     );
   }, [pages, pageSafe]);
 
@@ -263,6 +402,11 @@ export default function ProductGrid({
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 dark:bg-neutral-950 dark:text-gray-100">
+      {/* Image Preview Modal */}
+      {previewSrc && (
+        <ImagePreview src={previewSrc} alt={previewAlt} onClose={closePreview} />
+      )}
+
       {/* scroll-mt helps if you later use in-page links / sticky headers */}
       <section ref={topRef} className="mx-auto max-w-6xl px-4 py-10 scroll-mt-24">
         <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -284,16 +428,12 @@ export default function ProductGrid({
               <input
                 value={q}
                 onChange={onSearchChange}
-                placeholder="Search name, brand, category…"
+                placeholder='Search name, brand, category, or spec e.g. 14" HD, 4GB RAM…'
                 className="w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none ring-0 transition focus:border-gray-400 placeholder:text-gray-400 dark:bg-neutral-900 dark:border-neutral-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-neutral-500"
               />
               {q && (
                 <button
-                  onClick={() => {
-                    setQ("");
-                    setPage(1);
-                    scrollToTopOfProducts();
-                  }}
+                  onClick={() => setQ("")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-800"
                 >
                   Clear
@@ -303,6 +443,95 @@ export default function ProductGrid({
             <ThemeToggle />
           </div>
         </header>
+
+        {/* Spec Filters (compact + collapsible) */}
+        <Card className="mb-4 p-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+              className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              title={filtersOpen ? "Hide filters" : "Show filters"}
+            >
+              <span className="font-semibold">Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="inline-flex items-center justify-center rounded-full px-1.5 text-[10px] font-medium bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-200">
+                  {activeFiltersCount}
+                </span>
+              )}
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            <button
+              onClick={clearSpecs}
+              className="text-xs rounded-md border px-2 py-1 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              title="Reset all spec filters"
+            >
+              Reset
+            </button>
+          </div>
+
+          {filtersOpen && (
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <SpecInput
+                label="Display"
+                value={filters.display}
+                onChange={(v) => onSpecChange("display", v)}
+                placeholder='e.g. 14" HD'
+              />
+              <SpecInput
+                label="CPU"
+                value={filters.cpu}
+                onChange={(v) => onSpecChange("cpu", v)}
+                placeholder="e.g. Intel Celeron N2840"
+              />
+              <SpecInput
+                label="RAM"
+                value={filters.ram}
+                onChange={(v) => onSpecChange("ram", v)}
+                placeholder="e.g. 4GB"
+              />
+              <SpecInput
+                label="Storage"
+                value={filters.storage}
+                onChange={(v) => onSpecChange("storage", v)}
+                placeholder="e.g. 250GB HDD"
+              />
+              <SpecInput
+                label="Graphics"
+                value={filters.gpu}
+                onChange={(v) => onSpecChange("gpu", v)}
+                placeholder="e.g. Intel HD Graphics"
+              />
+              <SpecInput
+                label="Keyboard"
+                value={filters.keyboard}
+                onChange={(v) => onSpecChange("keyboard", v)}
+                placeholder="e.g. Non-backlit"
+              />
+              <SpecInput
+                label="Condition"
+                value={filters.condition}
+                onChange={(v) => onSpecChange("condition", v)}
+                placeholder="e.g. Grade A Foreign Used"
+              />
+              <SpecInput
+                label="Delivery"
+                value={filters.delivery}
+                onChange={(v) => onSpecChange("delivery", v)}
+                placeholder="e.g. Free Nationwide Delivery"
+              />
+              <SpecInput
+                label="Bundle"
+                value={filters.bundle}
+                onChange={(v) => onSpecChange("bundle", v)}
+                placeholder="e.g. Laptop"
+              />
+            </div>
+          )}
+        </Card>
 
         {sheetCsvUrl && loading ? (
           <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500 dark:bg-neutral-900 dark:border-neutral-800 dark:text-gray-300">
@@ -320,9 +549,21 @@ export default function ProductGrid({
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {current.map((p) => (
               <Card key={p.id} className="overflow-hidden transition hover:shadow-lg flex flex-col h-full">
-                <div className="w-full h-48 overflow-hidden">
-                  <ImgWithLoader src={p.img} alt={p.name} />
+                <div className="w-full overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!p.img) return;
+                      setPreviewSrc(p.img);
+                      setPreviewAlt(p.name);
+                    }}
+                    className="block w-full cursor-zoom-in"
+                    title="Click to preview"
+                  >
+                    <ImgWithLoader src={p.img} alt={p.name} />
+                  </button>
                 </div>
+
                 <div className="flex flex-col p-4 space-y-3 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="line-clamp-1 text-base font-semibold">{p.name}</h3>
@@ -423,5 +664,20 @@ export default function ProductGrid({
         </div>
       </section>
     </main>
+  );
+}
+
+/** Small input component for spec filters (compact) */
+function SpecInput({ label, value, onChange, placeholder }) {
+  return (
+    <label className="flex flex-col gap-1 text-[11px]">
+      <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-md border bg-white px-3 py-1.5 text-xs outline-none ring-0 transition focus:border-gray-400 placeholder:text-gray-400 dark:bg-neutral-900 dark:border-neutral-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-neutral-500"
+      />
+    </label>
   );
 }

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/home"
-import GamingLaptops from "./pages/laptops"
-import Tablets from "./pages/tablets"
-import BusinessLaptop from "./pages/phones"
+import GamingLaptops from "./pages/gamingLaptop"
+import Monitor from "./pages/monitor"
+import BusinessLaptop from "./pages/businesslaptop"
 import PageNotFound from "./pages/pageNotFound"
 import Desktop from "./pages/desktop"
 import ScrollToTop from "./components/ScrollToTop"
@@ -21,7 +21,7 @@ export default function App() {
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
               <Route path="/Businesslaptop" element={<BusinessLaptop />} />
               <Route path="/desktop" element={<Desktop />} />
-              <Route path="/tablets" element={<Tablets />} />
+              <Route path="/Monitor" element={<Monitor />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </main>

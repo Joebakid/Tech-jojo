@@ -27,14 +27,15 @@ const tiles = [
   {
     to: "/GamingLaptops",
     title: "Gaming Laptops",
-    subtitle: "Ultrabooks • Gaming • Workstations",
+    // Intel ° Nvidia ° RGB
+    subtitle: "Intel • Nvidia • RGB",
     Icon: Laptop,
     accent: "from-blue-500/20 to-blue-500/0 dark:from-blue-400/10 dark:to-transparent",
   },
   {
     to: "/Businesslaptop",
     title: "Business Laptop",
-    subtitle: "Work • iPhone • Accessories",
+    subtitle: "HP •  Dell • Lenovo",
     Icon: Smartphone,
     accent: "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
@@ -46,9 +47,10 @@ const tiles = [
     accent: "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
-    to: "/business laptop",
-    title: "Tablets",
-    subtitle: "iPad • Android • Stylus",
+    to: "/Monitor ",
+    title: "Monitors",
+    // Samsung ° AoC ° High Refresh Rate
+    subtitle: "Samsung • AoC • High Refresh Rate",
     Icon: Tablet,
     accent: "from-purple-500/20 to-purple-500/0 dark:from-purple-400/10 dark:to-transparent",
   },
@@ -60,7 +62,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-4 py-10 min-h-screen">
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">techjojo</h1>
+            <h1 className="text-3xl font-bold">techjojo's</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Pick a category to browse products.</p>
           </div>
           <ThemeToggle />
