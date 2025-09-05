@@ -20,7 +20,7 @@ export default function Footer({
           <span>© {new Date().getFullYear()}</span>
         </div>
 
-        {/* Techy mixed-font nav */}
+        {/* Techy   nav */}
         <nav className="flex flex-wrap items-center gap-4">
           <Link
             to="/GamingLaptops"
@@ -31,28 +31,28 @@ export default function Footer({
 
           <Link
             to="/Businesslaptop"
-            className="font-jetbrains hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)] transition"
+            className="font-orbitron hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)] transition"
           >
             Business Laptop
           </Link>
 
           <Link
             to="/desktop"
-            className="font-rajdhani uppercase tracking-wide hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)] transition"
+            className="font-orbitron uppercase tracking-wide hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)] transition"
           >
             Desktop
           </Link>
 
           <Link
             to="/Monitor"
-            className="font-exo2 uppercase tracking-wider hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)] transition"
+            className="font-orbitron uppercase tracking-wider hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)] transition"
           >
             Monitor
           </Link>
 
           <Link
             to="/GamingAccessories"
-            className="font-jetbrains hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)] transition"
+            className="font-orbitron hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)] transition"
           >
             Gaming accessories
           </Link>
