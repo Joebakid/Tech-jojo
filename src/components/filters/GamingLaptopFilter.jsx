@@ -5,7 +5,7 @@ export default function GamingLaptopFilters(props) {
   // Matches your CSV headers (lowercase). `id` and `img` are intentionally excluded.
   const keys = [
     { key: "brand", label: "Brand" },
-    { key: "price", label: "Price" },
+    // { key: "price", label: "Price" },
     { key: "gpu", label: "GPU", aliases: ["graphics"] },
     { key: "cpu", label: "CPU", aliases: ["processor"] },
     { key: "ram", label: "RAM" },
