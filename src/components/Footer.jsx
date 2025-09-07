@@ -20,8 +20,8 @@ export default function Footer({
         <div className="grid grid-cols-1 gap-3 py-3 text-xs text-gray-300 sm:grid-cols-[auto_1fr_auto] sm:items-center">
           {/* Brand */}
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-white">techjojo</span>
-            <span>© {new Date().getFullYear()}</span>
+            <span className="font-semibold font-orbitron lowercase text-white">techjojo</span>
+            <span className="font-semibold font-orbitron lowercase">© {new Date().getFullYear()}</span>
           </div>
 
           {/* Nav: 2-col grid on mobile, wraps neatly; flex row on sm+ */}

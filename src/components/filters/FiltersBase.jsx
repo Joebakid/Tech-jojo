@@ -1,5 +1,5 @@
 // src/components/filters/FiltersBase.jsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import SpecSelect from "./SpecSelect";
 
 function caseFindHeader(headers, candidates) {
@@ -11,9 +11,48 @@ function caseFindHeader(headers, candidates) {
   return null;
 }
 
-/**
- * keys: Array<string|{ key: string, label?: string, aliases?: string[] }>
- */
+// --- helpers to clean option values ---------------------------------
+const JUNK = new Set(["", "-", "—", "n/a", "na", "any", "null", "undefined"]);
+
+function cleanOne(v) {
+  if (v == null) return "";
+  let s = String(v)
+    // normalize smart quotes → straight quotes
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    // collapse whitespace
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // strip surrounding quotes if they wrap the whole string
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim();
+  }
+
+  // sometimes CSV leaves a trailing quote
+  s = s.replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, "").trim();
+
+  return s;
+}
+
+function isMeaningful(s) {
+  const k = s.toLowerCase();
+  return !JUNK.has(k);
+}
+
+function uniqueCaseInsensitive(arr) {
+  const seen = new Set();
+  const out = [];
+  for (const x of arr) {
+    const key = x.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(x);
+    }
+  }
+  return out;
+}
+
 export default function FiltersBase({
   title = "Filters",
   headers,
@@ -24,7 +63,15 @@ export default function FiltersBase({
   keys,
 }) {
   const [open, setOpen] = useState(true);
-  const activeCount = Object.entries(filters).filter(([k, v]) => v && (facets?.[k] || []).length).length;
+
+  // count only truly active (non-empty after cleaning) filters
+  const activeCount = useMemo(() => {
+    return Object.entries(filters || {}).filter(([k, v]) => {
+      const cleaned = cleanOne(v);
+      const hasOptions = (facets?.[k] || []).length > 0;
+      return cleaned && isMeaningful(cleaned) && hasOptions;
+    }).length;
+  }, [filters, facets]);
 
   return (
     <div className="rounded-2xl border bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800 mb-4 p-3">
@@ -56,9 +103,20 @@ export default function FiltersBase({
           {(keys || []).map((entry) => {
             const cfg = typeof entry === "string" ? { key: entry } : entry;
             const { key, label, aliases = [] } = cfg;
+
             const actual = caseFindHeader(headers, [key, ...aliases]);
-            const options = actual ? facets?.[actual] || [] : [];
-            const value = actual ? filters?.[actual] || "" : "";
+
+            // sanitize options coming from facets before rendering
+            const raw = actual ? facets?.[actual] || [] : [];
+            const options = useMemo(() => {
+              const cleaned = raw.map(cleanOne).filter(isMeaningful);
+              return uniqueCaseInsensitive(cleaned).sort((a, b) => a.localeCompare(b));
+            }, [raw]);
+
+            // keep current value only if it's still valid after cleaning
+            const rawValue = actual ? filters?.[actual] : "";
+            const valueClean = cleanOne(rawValue);
+            const value = options.includes(valueClean) ? valueClean : "";
 
             return (
               <SpecSelect
@@ -66,7 +124,7 @@ export default function FiltersBase({
                 label={label || key}
                 value={value}
                 options={options}
-                onChange={(v) => actual && onChange(actual, v)}
+                onChange={(v) => actual && onChange(actual, cleanOne(v))}
                 disabled={!actual || options.length === 0}
               />
             );

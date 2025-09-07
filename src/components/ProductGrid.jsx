@@ -32,13 +32,87 @@ function canon(v) {
     .trim();
 }
 
+/* -------------------- CLEANING + CSV UTILITIES -------------------- */
+const JUNK = new Set(["", "-", "—", "n/a", "na", "any", "null", "undefined"]);
+
+function cleanOne(v) {
+  if (v == null) return "";
+  let s = String(v)
+    // normalize smart quotes → straight quotes
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    // collapse whitespace
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // strip surrounding quotes if they wrap the whole string
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim();
+  }
+
+  // remove accidental stray quotes
+  s = s.replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, "").trim();
+
+  // unescape doubled quotes inside CSV
+  s = s.replace(/""/g, '"');
+
+  return s;
+}
+
+function isMeaningful(s) {
+  const k = String(s || "").toLowerCase();
+  return !JUNK.has(k);
+}
+
+function uniqueCI(arr) {
+  const seen = new Set();
+  const out = [];
+  for (const x of arr) {
+    const key = String(x).toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(x);
+    }
+  }
+  return out;
+}
+
+// CSV line splitter that respects quotes (commas inside quotes won't split)
+function splitCsvLine(line) {
+  const out = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (ch === '"') {
+      // double quote inside a quoted field -> literal quote
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+/* -------------------- UI building blocks -------------------- */
 function Card({ children, className = "" }) {
   return (
     <div
       className={
         "rounded-2xl border border-gray-200 shadow-sm " +
         "bg-white" +
-        "dark:border-neutral-800 dark:!bg-neutral-900" + // 🔥 important override
+        " dark:border-neutral-800 dark:!bg-neutral-900 " + // 🔥 important override
         className
       }
     >
@@ -108,7 +182,7 @@ function ImagePreview({ src, alt, onClose }) {
       onMouseDown={onClose}
     >
       <div
-        className="relative max-h-[85vh] max-w-[92vw]"
+        className="relative max-h:[85vh] max-w-[92vw]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <button
@@ -116,14 +190,8 @@ function ImagePreview({ src, alt, onClose }) {
           className="absolute -right-3 -top-3 rounded-full bg-white p-1 shadow dark:bg-neutral-900"
           title="Close"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6 6 18" />
             <path d="m6 6 12 12" />
           </svg>
@@ -138,7 +206,7 @@ function ImagePreview({ src, alt, onClose }) {
   );
 }
 
-// ===== CSV loader hook (returns headers + rows) =====
+/* -------------------- CSV loader hook (headers + rows) -------------------- */
 function useProductsFromSheet(sheetCsvUrl) {
   const [rows, setRows] = useState([]);
   const [headers, setHeaders] = useState([]);
@@ -149,39 +217,43 @@ function useProductsFromSheet(sheetCsvUrl) {
     if (!sheetCsvUrl) return;
     let cancelled = false;
 
-    // Simple CSV parser (assumes no quoted commas)
     const parseCSV = (csv) => {
-      const lines = csv.trim().split(/\r?\n/);
+      const lines = csv.replace(/\r/g, "").split("\n").filter(l => l.trim().length);
       if (lines.length === 0) return { headers: [], rows: [] };
-      const headers = lines[0].split(",").map((h) => h.trim());
+
+      const rawHeaders = splitCsvLine(lines[0]).map(h => cleanOne(h));
       const out = [];
+
       for (let i = 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line?.trim()) continue;
-        const cols = line.split(",").map((c) => c.trim());
+        const cols = splitCsvLine(lines[i]).map(c => cleanOne(c));
         const obj = {};
-        headers.forEach((h, idx) => (obj[h] = cols[idx] ?? ""));
-        // conveniences
+        rawHeaders.forEach((h, idx) => (obj[h] = cols[idx] ?? ""));
+
+        // normalize price to number when possible
         if ("price" in obj && obj.price !== "") {
           const n = Number(obj.price);
-          obj.price = Number.isFinite(n) ? n : obj.price;
+          obj.price = Number.isFinite(n) ? n : cleanOne(obj.price);
         }
+
+        // normalize tags to array if present
         if (typeof obj.tags === "string" && obj.tags.length) {
           obj.tags = obj.tags
             .split(/[|,]/)
-            .map((t) => t.trim())
-            .filter(Boolean);
+            .map(t => cleanOne(t))
+            .filter(isMeaningful);
         }
+
         out.push(obj);
       }
-      return { headers, rows: out };
+
+      return { headers: rawHeaders, rows: out };
     };
 
     (async () => {
       try {
         setLoading(true);
         const res = await fetch(sheetCsvUrl, { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to load products");
+        if (!res.ok) throw new Error(`Failed to load products (${res.status})`);
         const text = await res.text();
         if (cancelled) return;
         const parsed = parseCSV(text);
@@ -202,7 +274,7 @@ function useProductsFromSheet(sheetCsvUrl) {
   return { headers, rows, loading, error };
 }
 
-// ===== WhatsApp helpers (dynamic from headers) =====
+/* -------------------- WhatsApp helpers (dynamic from headers) -------------------- */
 function productToWhatsAppText(p, headers) {
   const lines = ["Hi! I'm interested in this product:"];
   headers
@@ -213,10 +285,10 @@ function productToWhatsAppText(p, headers) {
         v == null || v === ""
           ? "-"
           : Array.isArray(v)
-            ? v.join(", ")
-            : h.toLowerCase() === "price" && typeof v === "number"
-              ? formatNaira(v)
-              : String(v);
+          ? v.join(", ")
+          : h.toLowerCase() === "price" && typeof v === "number"
+          ? formatNaira(v)
+          : String(v);
       lines.push(`• ${h}: ${out}`);
     });
   return encodeURIComponent(lines.join("\n"));
@@ -228,7 +300,7 @@ function waLinkForProduct(p, phoneDigitsOnly, headers) {
   )}`;
 }
 
-// ===== Main component =====
+/* -------------------- Main component -------------------- */
 export default function ProductGrid({
   title = "Products",
   items = [],
@@ -270,33 +342,37 @@ export default function ProductGrid({
   const pageSizeSafe = Math.max(1, pageSize);
   const topRef = useRef(null);
 
+  // NEW: filters panel visibility (hidden by default)
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   // Normalize each row & compute helpers
   const sourceItems = useMemo(() => {
     const result = (activeRows || []).map((row) => {
       const o = {};
       headers.forEach((h) => {
         let val = row[h];
+
         if (h.toLowerCase() === "price") {
           if (val === undefined || val === "") {
             o[h] = "-";
           } else {
             const n = Number(val);
-            o[h] = Number.isFinite(n) ? n : String(val);
+            o[h] = Number.isFinite(n) ? n : cleanOne(val);
           }
         } else if (h.toLowerCase() === "tags") {
-          if (Array.isArray(row[h])) o[h] = row[h];
-          else if (typeof row[h] === "string" && row[h].trim()) {
-            o[h] = row[h]
-              .split(/[|,]/)
-              .map((t) => t.trim())
-              .filter(Boolean);
+          if (Array.isArray(val)) {
+            o[h] = val.filter(isMeaningful);
+          } else if (typeof val === "string" && val.trim()) {
+            o[h] = val.split(/[|,]/).map(t => cleanOne(t)).filter(isMeaningful);
           } else {
             o[h] = "-";
           }
         } else {
-          o[h] = val === undefined || val === "" ? "-" : val;
+          const s = cleanOne(val);
+          o[h] = s === "" ? "-" : s;
         }
       });
+
       const nameKey = headers.find((h) => h.toLowerCase() === "name") || null;
       const brandKey = headers.find((h) => h.toLowerCase() === "brand") || null;
       const imgKey =
@@ -331,9 +407,10 @@ export default function ProductGrid({
     for (const row of sourceItems) {
       for (const k of keys) {
         let v = row[k];
-        if (Array.isArray(v)) v = v.join(", "); // arrays -> string
-        if (v === "-" || v == null || v === "") continue;
-        const norm = normalize(String(v));
+        if (Array.isArray(v)) v = v.join(", "); // arrays -> string for option text
+        v = cleanOne(v);
+        if (!isMeaningful(v) || v === "-") continue;
+        const norm = normalize(String(v)); // for grouping
         const label = String(v);
         const hit = maps[k].get(norm);
         if (hit) hit.count += 1;
@@ -343,13 +420,10 @@ export default function ProductGrid({
 
     for (const k of keys) {
       const arr = Array.from(maps[k].values())
-        .sort((a, b) => {
-          const la = String(a.label);
-          const lb = String(b.label);
-          return b.count - a.count || la.localeCompare(lb);
-        })
+        .sort((a, b) => b.count - a.count || String(a.label).localeCompare(String(b.label)))
         .map((v) => String(v.label));
-      out[k] = arr.length > 1 ? arr : []; // show dropdown only if > 1 choice
+      // only show dropdown if there are >1 real choices
+      out[k] = arr.length > 1 ? uniqueCI(arr) : [];
     }
     return out;
   }, [headers, sourceItems]);
@@ -368,9 +442,19 @@ export default function ProductGrid({
   }, [headers]);
 
   const onSpecChange = (key, value) =>
-    setFilters((f) => ({ ...f, [key]: value }));
+    setFilters((f) => ({ ...f, [key]: cleanOne(value) }));
   const clearSpecs = () =>
     setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, ""])));
+
+  // NEW: active filters count (used in the button badge)
+  const activeFiltersCount = useMemo(
+    () =>
+      Object.entries(filters).filter(([k, v]) => {
+        const c = cleanOne(v);
+        return c && isMeaningful(c) && facets[k]?.length;
+      }).length,
+    [filters, facets],
+  );
 
   // Reset page when search/filters change
   useEffect(() => {
@@ -393,11 +477,12 @@ export default function ProductGrid({
 
       // filters (tolerant equality via canon)
       const specsMatch = Object.entries(filters).every(([key, val]) => {
-        if (!val) return true;
+        const cval = cleanOne(val);
+        if (!cval) return true;
         if (!facets[key]?.length) return true;
         let v = row[key];
         if (Array.isArray(v)) v = v.join(", ");
-        return canon(v) === canon(val);
+        return canon(cleanOne(v)) === canon(cval);
       });
 
       return searchMatch && specsMatch;
@@ -405,6 +490,7 @@ export default function ProductGrid({
   }, [sourceItems, headers, q, filters, facets]);
 
   // pagination
+  // const pageSizeSafe = Math.max(1, pageSize);
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / pageSizeSafe));
   const pageSafe = Math.min(page, pages);
@@ -511,72 +597,111 @@ export default function ProductGrid({
                 </button>
               )}
             </div>
-            <ThemeToggle />
-          </div>
-        </header>
 
-        {/* Pluggable filter panel */}
-        {typeof renderFilters === "function" ? (
-          // NOTE: pass prop names that FiltersBase expects
-          renderFilters({
-            headers,
-            facets,
-            filters,
-            onChange: onSpecChange, // ✅ fix: provide onChange
-            clear: clearSpecs, // ✅ fix: provide clear
-            // still expose the detailed names if your custom panels want them
-            onSpecChange,
-            clearSpecs,
-            activeFiltersCount: Object.entries(filters).filter(
-              ([k, v]) => v && facets[k]?.length,
-            ).length,
-          })
-        ) : (
-          // Fallback generic filter UI
-          <Card className="mb-4 p-3">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Filters
-            </div>
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {headers
-                .filter(
-                  (h) =>
-                    !["id", "img", "image", "imageurl", "image_url"].includes(
-                      h.toLowerCase(),
-                    ),
-                )
-                .map((key) => (
-                  <label key={key} className="flex flex-col gap-1 text-[11px]">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                      {key}
-                    </span>
-                    <select
-                      value={filters[key] || ""}
-                      onChange={(e) => onSpecChange(key, e.target.value)}
-                      className="w-full rounded-md border bg-white px-3 py-1.5 text-xs outline-none ring-0 transition focus:border-gray-400 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100 dark:focus:border-neutral-500"
-                    >
-                      <option value="">Any</option>
-                      {(facets[key] || []).map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ))}
-            </div>
-            {Object.values(filters).some(Boolean) && (
-              <div className="mt-3">
+            {/* NEW: Filters toggle + quick reset */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((s) => !s)}
+                className="rounded-lg border px-3 py-2 text-xs transition hover:bg-gray-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                title="Show filters"
+              >
+                Filters
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-gray-900 px-1.5 text-[10px] text-white dark:bg-neutral-200 dark:text-neutral-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              {!filtersOpen && activeFiltersCount > 0 && (
                 <button
                   onClick={clearSpecs}
-                  className="rounded-md border px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+                  className="rounded-md border px-2 py-2 text-[11px] text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+                  title="Reset all filters"
                 >
                   Reset
                 </button>
+              )}
+
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+
+        {/* Pluggable filter panel — HIDDEN by default, toggled by button */}
+        {filtersOpen &&
+          (typeof renderFilters === "function" ? (
+            renderFilters({
+              headers,
+              facets,
+              filters,
+              onChange: onSpecChange,
+              clear: clearSpecs,
+              // extra helpers for custom panels
+              onSpecChange,
+              clearSpecs,
+              activeFiltersCount,
+              isOpen: filtersOpen,
+              close: () => setFiltersOpen(false),
+            })
+          ) : (
+            // Fallback generic filter UI
+            <Card className="mb-4 p-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  Filters
+                </div>
+                <button
+                  onClick={() => setFiltersOpen(false)}
+                  className="rounded-md px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-neutral-800"
+                >
+                  Close
+                </button>
               </div>
-            )}
-          </Card>
-        )}
+
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {headers
+                  .filter(
+                    (h) =>
+                      !["id", "img", "image", "imageurl", "image_url"].includes(
+                        h.toLowerCase(),
+                      ),
+                  )
+                  .map((key) => (
+                    <label key={key} className="flex flex-col gap-1 text-[11px]">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {key}
+                      </span>
+                      <select
+                        value={filters[key] || ""}
+                        onChange={(e) => onSpecChange(key, e.target.value)}
+                        className="w-full rounded-md border bg-white px-3 py-1.5 text-xs outline-none ring-0 transition focus:border-gray-400 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100 dark:focus:border-neutral-500"
+                      >
+                        <option value="">Any</option>
+                        {(facets[key] || []).map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+              </div>
+
+              {Object.values(filters).some(Boolean) && (
+                <div className="mt-3">
+                  <button
+                    onClick={clearSpecs}
+                    className="rounded-md border px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+                  >
+                    Reset
+                  </button>
+                </div>
+              )}
+            </Card>
+          ))}
 
         {/* Products */}
         {sheetCsvUrl && loading ? (
@@ -647,11 +772,11 @@ export default function ProductGrid({
                           v == null || v === "-"
                             ? "-"
                             : Array.isArray(v)
-                              ? v.join(", ")
-                              : h.toLowerCase() === "price" &&
-                                  typeof v === "number"
-                                ? formatNaira(v)
-                                : String(v);
+                            ? v.join(", ")
+                            : h.toLowerCase() === "price" &&
+                              typeof v === "number"
+                            ? formatNaira(v)
+                            : String(v);
                         return (
                           <div key={h}>
                             {h}: {out}
