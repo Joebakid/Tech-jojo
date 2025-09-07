@@ -8,7 +8,7 @@ export default function Footer({
   fixed = true,
 }) {
   const digits = whatsAppNumber.replace(/[^\d]/g, "");
-  const fixedClasses = fixed ? "fixed inset-x-0 bottom-0 z-40" : "";
+  const fixedClasses = fixed ? " " : "";
 
   return (
     <footer
