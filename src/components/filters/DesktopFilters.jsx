@@ -4,7 +4,7 @@ import FiltersBase from "./FiltersBase";
 export default function DesktopFilters(props) {
   const keys = [
     { key: "brand", label: "Brand" },
-    { key: "price", label: "Price" },
+    // { key: "price", label: "Price" },
     { key: "cpu", label: "CPU", aliases: ["processor"] },
     {
       key: "motherboard",
