@@ -32,6 +32,126 @@ function canon(v) {
     .trim();
 }
 
+// --- Emoji spec helpers -------------------------------------------------
+function findHeader(headers, candidates) {
+  const lowers = headers.map((h) => h.toLowerCase());
+  for (const c of candidates) {
+    const i = lowers.indexOf(String(c).toLowerCase());
+    if (i !== -1) return headers[i];
+  }
+  return null;
+}
+
+function hasValue(v) {
+  if (v == null) return false;
+  const s = Array.isArray(v) ? v.join(", ") : String(v);
+  return isMeaningful(cleanOne(s)) && s !== "-";
+}
+
+function specIconFor(header, value) {
+  const h = header.toLowerCase();
+  // prefer header-based mapping; fall back to value keywords if needed
+  if (["display", "screen", "screen size", "panel"].some((k) => h.includes(k))) return "🖥";
+  if (["cpu", "processor", "chip"].some((k) => h.includes(k))) return "💻";
+  if (["ram", "memory"].some((k) => h.includes(k))) return "🧠";
+  if (["storage", "ssd", "hdd", "drive", "disk"].some((k) => h.includes(k))) return "💾";
+  if (["gpu", "graphics", "video"].some((k) => h.includes(k))) return "🎮";
+  if (["keyboard"].some((k) => h.includes(k))) return "⌨";
+  if (["connectivity", "wifi", "bluetooth", "ports", "network"].some((k) => h.includes(k))) return "📶";
+  if (["refresh", "hz", "response"].some((k) => h.includes(k))) return "🎮";
+  if (["adjustments", "adjustment", "tilt", "swivel", "pivot", "height"].some((k) => h.includes(k))) return "🔧";
+  if (["lock", "kensington", "security"].some((k) => h.includes(k))) return "🔒";
+  if (["condition"].some((k) => h.includes(k))) return "📦";
+  if (["bundle", "included", "extras", "freebies"].some((k) => h.includes(k))) return "🎁";
+  if (["delivery", "shipping"].some((k) => h.includes(k))) return "🚚";
+  if (["referral"].some((k) => h.includes(k))) return "💰";
+
+  // value-based fallback hints
+  const s = cleanOne(value).toLowerCase();
+  if (s.includes("free shipping")) return "🚚";
+  if (s.includes("backlit")) return "⌨";
+  if (s.includes("wifi") || s.includes("bluetooth")) return "📶";
+  return "•";
+}
+
+/** Build a curated, emoji-annotated list of spec lines in a nice order */
+function buildEmojiSpecs(p, headers) {
+  // Look up real header names from possible aliases in your CSV
+  const H = {
+    category: findHeader(headers, ["category", "type", "segment"]),
+    display: findHeader(headers, ["display", "screen", "screen size", "panel", "display size"]),
+    cpu: findHeader(headers, ["cpu", "processor", "chip", "processor model"]),
+    ram: findHeader(headers, ["ram", "memory", "system memory"]),
+    storage: findHeader(headers, ["storage", "ssd", "hdd", "drive", "disk"]),
+    gpu: findHeader(headers, ["gpu", "graphics", "graphics card", "video"]),
+    keyboard: findHeader(headers, ["keyboard", "backlit", "keyboard type"]),
+    refresh: findHeader(headers, ["refresh rate", "hz", "response time"]),
+    connectivity: findHeader(headers, ["connectivity", "wifi", "bluetooth", "ports", "network"]),
+    adjustments: findHeader(headers, ["adjustments", "height", "tilt", "swivel", "pivot"]),
+    security: findHeader(headers, ["security", "fingerprint", "tpm", "smart card", "camera shutter"]),
+    lock: findHeader(headers, ["lock", "kensington lock", "kensington lock slot"]),
+    condition: findHeader(headers, ["condition"]),
+    bundle: findHeader(headers, ["bundle", "included", "freebies", "extras"]),
+    delivery: findHeader(headers, ["delivery", "shipping"]),
+    referral: findHeader(headers, ["referral bonus", "referral"]),
+  };
+
+  // Desired display order (no price here — you already render price at the bottom)
+  const order = [
+    "display",
+    "cpu",
+    "ram",
+    "storage",
+    "gpu",
+    "keyboard",
+    "connectivity",
+    "refresh",
+    "adjustments",
+    "security",
+    "lock",
+    "condition",
+    "bundle",
+    "delivery",
+    "referral",
+  ];
+
+  const lines = [];
+  for (const key of order) {
+    const header = H[key];
+    if (!header) continue;
+    let v = p[header];
+    if (!hasValue(v)) continue;
+    const val = Array.isArray(v) ? v.join(", ") : String(v);
+    const icon = specIconFor(header, val);
+
+    // Label prettification: Title Case header
+    const label =
+      key === "refresh" ? "Refresh Rate"
+      : key === "lock" ? "Security"
+      : header;
+
+    lines.push({ icon, label, text: val });
+  }
+
+  // Optional: category badge line at the very top if you want to echo “Laptop / Desktop / Monitor”
+  if (H.category && hasValue(p[H.category])) {
+    const cat = String(p[H.category]);
+    // choose a category icon
+    const catIcon = /monitor/i.test(cat)
+      ? "🖥"
+      : /desktop/i.test(cat)
+      ? "🖥"
+      : /laptop|notebook/i.test(cat)
+      ? "💻"
+      : "🧩";
+    // unshift category as first line (pure label)
+    lines.unshift({ icon: catIcon, label: cat, text: "" });
+  }
+
+  return lines;
+}
+
+
 /* -------------------- CLEANING + CSV UTILITIES -------------------- */
 const JUNK = new Set(["", "-", "—", "n/a", "na", "any", "null", "undefined"]);
 
@@ -754,48 +874,61 @@ export default function ProductGrid({
                   </div>
 
                   {/* Dynamic spec list */}
-                  <div className="flex-1 space-y-0.5 text-xs text-gray-600 dark:text-gray-400">
-                    {headers
-                      .filter(
-                        (h) =>
-                          ![
-                            "id",
-                            "img",
-                            "image",
-                            "imageurl",
-                            "image_url",
-                          ].includes(h.toLowerCase()),
-                      )
-                      .map((h) => {
-                        const v = p[h];
-                        const out =
-                          v == null || v === "-"
-                            ? "-"
-                            : Array.isArray(v)
-                            ? v.join(", ")
-                            : h.toLowerCase() === "price" &&
-                              typeof v === "number"
-                            ? formatNaira(v)
-                            : String(v);
-                        return (
-                          <div key={h}>
-                            {h}: {out}
-                          </div>
-                        );
-                      })}
-                  </div>
+                 {/* Emoji spec list */}
+<div className="flex-1 space-y-1 text-xs text-gray-700 dark:text-gray-300">
+  {buildEmojiSpecs(p, headers).map(({ icon, label, text }, i) => (
+    <div key={i} className="flex items-start gap-1.5">
+      <span className="shrink-0 leading-5" aria-hidden>{icon}</span>
+      <div className="leading-5">
+        {label}
+        {text ? (
+          <>
+            {label.endsWith(":") ? " " : ": "}
+            <span className="text-gray-600 dark:text-gray-400">{text}</span>
+          </>
+        ) : null}
+      </div>
+    </div>
+  ))}
+</div>
 
-                  <div className="mt-auto">
-                    <a
-                      href={waLinkForProduct(p, phoneDigitsOnly, headers)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
-                      title={`WhatsApp: ${whatsAppNumber}`}
-                    >
-                      Message
-                    </a>
-                  </div>
+
+                 {/* Bottom row: bold price + Message button with emojis */}
+{(() => {
+  const priceKey = headers.find((h) => h.toLowerCase() === "price");
+  const raw = priceKey ? p[priceKey] : undefined;
+  const priceText =
+    typeof raw === "number"
+      ? formatNaira(raw)
+      : raw && raw !== "-"
+      ? String(raw)
+      : "Contact for price";
+
+  return (
+    <div className="mt-auto flex items-center justify-between gap-3">
+      <div className="text-sm font-bold">
+        <span aria-hidden>💰</span>{" "}
+        {priceText}
+      </div>
+
+      <a
+        href={waLinkForProduct(p, phoneDigitsOnly, headers)}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+        title={`WhatsApp: ${whatsAppNumber}`}
+      >
+        <span aria-hidden className="mr-1">📩</span>
+        Message
+      </a>
+    </div>
+  );
+})()}
+
+
+
+
+
                 </div>
               </Card>
             ))}
