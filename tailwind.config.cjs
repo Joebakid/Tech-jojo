@@ -9,7 +9,12 @@ module.exports = {
         orbitron: ["Orbitron", "ui-sans-serif", "system-ui", "sans-serif"],
         rajdhani: ["Rajdhani", "ui-sans-serif", "system-ui", "sans-serif"],
         exo2: ['"Exo 2"', "ui-sans-serif", "system-ui", "sans-serif"],
-        jetbrains: ['"JetBrains Mono"', "ui-monospace", "SFMono-Regular", "monospace"],
+        jetbrains: [
+          '"JetBrains Mono"',
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace",
+        ],
       },
 
       // Your existing radius tokens
