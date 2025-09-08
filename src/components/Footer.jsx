@@ -33,25 +33,25 @@ export default function Footer({
               to="/GamingLaptops"
               className="font-orbitron lowercase tracking-wide transition hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]"
             >
-              gaming laptop
+              gaming laptops
             </Link>
             <Link
               to="/Businesslaptop"
               className="font-orbitron lowercase transition hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)]"
             >
-              business laptop
+              business laptops
             </Link>
             <Link
               to="/desktop"
               className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]"
             >
-              desktop
+              desktops
             </Link>
             <Link
               to="/Monitor"
               className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]"
             >
-              monitor
+              monitors
             </Link>
             <Link
               to="/GamingAccessories"
