@@ -62,7 +62,7 @@ function specIconFor(header, value) {
   if (["adjustments", "adjustment", "tilt", "swivel", "pivot", "height"].some((k) => h.includes(k))) return "🔧";
   if (["lock", "kensington", "security"].some((k) => h.includes(k))) return "🔒";
   if (["condition"].some((k) => h.includes(k))) return "📦";
-  if (["bundle", "included", "extras", "freebies"].some((k) => h.includes(k))) return "🎁";
+  if (["bundle", "included", "extras"].some((k) => h.includes(k))) return "🎁";
   if (["delivery", "shipping"].some((k) => h.includes(k))) return "🚚";
   if (["referral"].some((k) => h.includes(k))) return "💰";
 
@@ -96,7 +96,6 @@ function buildEmojiSpecs(p, headers) {
     referral: findHeader(headers, ["referral bonus", "referral"]),
   };
 
-  // Desired display order (no price here — you already render price at the bottom)
   const order = [
     "display",
     "cpu",
@@ -124,7 +123,6 @@ function buildEmojiSpecs(p, headers) {
     const val = Array.isArray(v) ? v.join(", ") : String(v);
     const icon = specIconFor(header, val);
 
-    // Label prettification: Title Case header
     const label =
       key === "refresh" ? "Refresh Rate"
       : key === "lock" ? "Security"
@@ -133,10 +131,8 @@ function buildEmojiSpecs(p, headers) {
     lines.push({ icon, label, text: val });
   }
 
-  // Optional: category badge line at the very top if you want to echo “Laptop / Desktop / Monitor”
   if (H.category && hasValue(p[H.category])) {
     const cat = String(p[H.category]);
-    // choose a category icon
     const catIcon = /monitor/i.test(cat)
       ? "🖥"
       : /desktop/i.test(cat)
@@ -144,7 +140,6 @@ function buildEmojiSpecs(p, headers) {
       : /laptop|notebook/i.test(cat)
       ? "💻"
       : "🧩";
-    // unshift category as first line (pure label)
     lines.unshift({ icon: catIcon, label: cat, text: "" });
   }
 
@@ -165,17 +160,12 @@ function cleanOne(v) {
     .replace(/\s+/g, " ")
     .trim();
 
-  // strip surrounding quotes if they wrap the whole string
   if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.slice(1, -1).trim();
   }
 
-  // remove accidental stray quotes
   s = s.replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, "").trim();
-
-  // unescape doubled quotes inside CSV
   s = s.replace(/""/g, '"');
-
   return s;
 }
 
@@ -207,7 +197,6 @@ function splitCsvLine(line) {
     const ch = line[i];
 
     if (ch === '"') {
-      // double quote inside a quoted field -> literal quote
       if (inQuotes && line[i + 1] === '"') {
         cur += '"';
         i++;
@@ -232,7 +221,7 @@ function Card({ children, className = "" }) {
       className={
         "rounded-2xl border border-gray-200 shadow-sm " +
         "bg-white" +
-        " dark:border-neutral-800 dark:!bg-neutral-900 " + // 🔥 important override
+        " dark:border-neutral-800 dark:!bg-neutral-900 " +
         className
       }
     >
@@ -241,14 +230,13 @@ function Card({ children, className = "" }) {
   );
 }
 
-/** Image with spinner + error fallback */
 function ImgWithLoader({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
   if (!src || errored) {
     return (
-      <div className="aspect-[4/3] w-full bg-gray-100 dark:bg-neutral-800">
+      <div className="aspect-[4/3] w-full bg-gray-100 dark:bg-neutral-80800">
         <div className="flex h-full w-full items-center justify-center text-xs text-gray-400 dark:text-gray-500">
           No image
         </div>
@@ -277,7 +265,6 @@ function ImgWithLoader({ src, alt }) {
   );
 }
 
-/** Centered modal for image preview */
 function ImagePreview({ src, alt, onClose }) {
   useEffect(() => {
     function onKey(e) {
@@ -394,30 +381,22 @@ function useProductsFromSheet(sheetCsvUrl) {
   return { headers, rows, loading, error };
 }
 
-/* -------------------- WhatsApp helpers (dynamic from headers) -------------------- */
-function productToWhatsAppText(p, headers) {
-  const lines = ["Hi! I'm interested in this product:"];
-  headers
-    .filter((h) => h.toLowerCase() !== "id") // hide id
-    .forEach((h) => {
-      const v = p[h];
-      const out =
-        v == null || v === ""
-          ? "-"
-          : Array.isArray(v)
-          ? v.join(", ")
-          : h.toLowerCase() === "price" && typeof v === "number"
-          ? formatNaira(v)
-          : String(v);
-      lines.push(`• ${h}: ${out}`);
-    });
-  return encodeURIComponent(lines.join("\n"));
+/* -------------------- Price helpers -------------------- */
+function parsePriceCell(input) {
+  if (input == null) return NaN;
+  if (typeof input === "number") return input;
+  const s = String(input)
+    .replace(/[₦,]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/ngn/i, "")
+    .trim();
+  const m = s.match(/(\d+(\.\d+)?)/);
+  return m ? Number(m[1]) : NaN;
 }
-function waLinkForProduct(p, phoneDigitsOnly, headers) {
-  return `https://wa.me/${phoneDigitsOnly}?text=${productToWhatsAppText(
-    p,
-    headers,
-  )}`;
+function rangeFromLabel(lbl) {
+  const m = /(\d+)K–(\d+)K/.exec(String(lbl || ""));
+  if (!m) return null;
+  return [Number(m[1]) * 1000, Number(m[2]) * 1000];
 }
 
 /* -------------------- Main component -------------------- */
@@ -436,20 +415,15 @@ export default function ProductGrid({
     error,
   } = useProductsFromSheet(sheetCsvUrl);
 
-  // Which dataset is active?
   const usingCsv = !!sheetCsvUrl;
   const activeRows = usingCsv ? csvRows : items;
 
-  // Build the header list:
-  // - If CSV provided, use CSV header order exactly
-  // - Else derive from first item keys (stable enough)
   const headers = useMemo(() => {
     if (usingCsv) return csvHeaders || [];
     if (!activeRows || !activeRows.length) return [];
     return Object.keys(activeRows[0]);
   }, [usingCsv, csvHeaders, activeRows]);
 
-  // UI state
   const [previewSrc, setPreviewSrc] = useState("");
   const [previewAlt, setPreviewAlt] = useState("");
   const closePreview = () => {
@@ -462,7 +436,6 @@ export default function ProductGrid({
   const pageSizeSafe = Math.max(1, pageSize);
   const topRef = useRef(null);
 
-  // NEW: filters panel visibility (hidden by default)
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Normalize each row & compute helpers
@@ -527,10 +500,10 @@ export default function ProductGrid({
     for (const row of sourceItems) {
       for (const k of keys) {
         let v = row[k];
-        if (Array.isArray(v)) v = v.join(", "); // arrays -> string for option text
+        if (Array.isArray(v)) v = v.join(", ");
         v = cleanOne(v);
         if (!isMeaningful(v) || v === "-") continue;
-        const norm = normalize(String(v)); // for grouping
+        const norm = normalize(String(v));
         const label = String(v);
         const hit = maps[k].get(norm);
         if (hit) hit.count += 1;
@@ -542,13 +515,12 @@ export default function ProductGrid({
       const arr = Array.from(maps[k].values())
         .sort((a, b) => b.count - a.count || String(a.label).localeCompare(String(b.label)))
         .map((v) => String(v.label));
-      // only show dropdown if there are >1 real choices
       out[k] = arr.length > 1 ? uniqueCI(arr) : [];
     }
     return out;
   }, [headers, sourceItems]);
 
-  // Filters state mirrors headers (skip 'id', 'img')
+  // Filters state mirrors headers (skip 'id', 'img'); keep synthetic price_range
   const [filters, setFilters] = useState({});
   useEffect(() => {
     const skip = new Set(["id", "img", "image", "imageurl", "image_url"]);
@@ -557,35 +529,58 @@ export default function ProductGrid({
       headers.forEach((h) => {
         if (!skip.has(h.toLowerCase())) next[h] = prev[h] ?? "";
       });
+      // preserve synthetic filters
+      next.price_range = prev.price_range ?? "";
       return next;
     });
   }, [headers]);
 
   const onSpecChange = (key, value) =>
     setFilters((f) => ({ ...f, [key]: cleanOne(value) }));
-  const clearSpecs = () =>
-    setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, ""])));
 
-  // NEW: active filters count (used in the button badge)
-  const activeFiltersCount = useMemo(
-    () =>
-      Object.entries(filters).filter(([k, v]) => {
-        const c = cleanOne(v);
-        return c && isMeaningful(c) && facets[k]?.length;
-      }).length,
-    [filters, facets],
-  );
+  const clearSpecs = () =>
+    setFilters((prev) => {
+      const next = {};
+      Object.keys(prev).forEach((k) => (next[k] = ""));
+      next.price_range = ""; // also clear synthetic price
+      return next;
+    });
+
+  // Active filters count (include synthetic price_range)
+  const activeFiltersCount = useMemo(() => {
+    const headerCount = Object.entries(filters).filter(([k, v]) => {
+      if (k === "price_range") return false;
+      const c = cleanOne(v);
+      return c && isMeaningful(c) && facets[k]?.length;
+    }).length;
+    const priceCount = cleanOne(filters.price_range || "") ? 1 : 0;
+    return headerCount + priceCount;
+  }, [filters, facets]);
 
   // Reset page when search/filters change
   useEffect(() => {
     setPage(1);
   }, [q, filters]);
 
-  // search + filter
+  // search + filter (apply price range first)
   const filtered = useMemo(() => {
     const needle = normalize(q);
+
+    // find a price column header
+    const priceHeader =
+      findHeader(headers, ["price", "amount", "cost", "ngn", "price (ngn)"]);
+
+    const bounds = rangeFromLabel(filters?.price_range || "");
+
     return sourceItems.filter((row) => {
-      // search across all headers
+      // 1) price range filter (if selected)
+      if (bounds && priceHeader) {
+        const [min, max] = bounds;
+        const p = parsePriceCell(row[priceHeader]);
+        if (!(isFinite(p) && p >= min && p <= max)) return false;
+      }
+
+      // 2) search across all headers
       const hay = headers
         .map((h) => {
           const v = row[h];
@@ -594,9 +589,11 @@ export default function ProductGrid({
         .map(normalize)
         .join(" ");
       const searchMatch = !needle || hay.includes(needle);
+      if (!searchMatch) return false;
 
-      // filters (tolerant equality via canon)
+      // 3) per-header facet filters (tolerant equality)
       const specsMatch = Object.entries(filters).every(([key, val]) => {
+        if (key === "price_range") return true; // handled above
         const cval = cleanOne(val);
         if (!cval) return true;
         if (!facets[key]?.length) return true;
@@ -605,12 +602,11 @@ export default function ProductGrid({
         return canon(cleanOne(v)) === canon(cval);
       });
 
-      return searchMatch && specsMatch;
+      return specsMatch;
     });
   }, [sourceItems, headers, q, filters, facets]);
 
   // pagination
-  // const pageSizeSafe = Math.max(1, pageSize);
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / pageSizeSafe));
   const pageSafe = Math.min(page, pages);
@@ -759,6 +755,8 @@ export default function ProductGrid({
               filters,
               onChange: onSpecChange,
               clear: clearSpecs,
+              // pass data so FiltersBase can build price buckets
+              items: sourceItems,
               // extra helpers for custom panels
               onSpecChange,
               clearSpecs,
@@ -873,62 +871,55 @@ export default function ProductGrid({
                     )}
                   </div>
 
-                  {/* Dynamic spec list */}
-                 {/* Emoji spec list */}
-<div className="flex-1 space-y-1 text-xs text-gray-700 dark:text-gray-300">
-  {buildEmojiSpecs(p, headers).map(({ icon, label, text }, i) => (
-    <div key={i} className="flex items-start gap-1.5">
-      <span className="shrink-0 leading-5" aria-hidden>{icon}</span>
-      <div className="leading-5">
-        {label}
-        {text ? (
-          <>
-            {label.endsWith(":") ? " " : ": "}
-            <span className="text-gray-600 dark:text-gray-400">{text}</span>
-          </>
-        ) : null}
-      </div>
-    </div>
-  ))}
-</div>
+                  {/* Emoji spec list */}
+                  <div className="flex-1 space-y-1 text-xs text-gray-700 dark:text-gray-300">
+                    {buildEmojiSpecs(p, headers).map(({ icon, label, text }, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <span className="shrink-0 leading-5" aria-hidden>{icon}</span>
+                        <div className="leading-5">
+                          {label}
+                          {text ? (
+                            <>
+                              {label.endsWith(":") ? " " : ": "}
+                              <span className="text-gray-600 dark:text-gray-400">{text}</span>
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
+                  {/* Bottom row: bold price + Message button with emojis */}
+                  {(() => {
+                    const priceKey = headers.find((h) => h.toLowerCase() === "price");
+                    const raw = priceKey ? p[priceKey] : undefined;
+                    const priceText =
+                      typeof raw === "number"
+                        ? formatNaira(raw)
+                        : raw && raw !== "-"
+                        ? String(raw)
+                        : "Contact for price";
 
-                 {/* Bottom row: bold price + Message button with emojis */}
-{(() => {
-  const priceKey = headers.find((h) => h.toLowerCase() === "price");
-  const raw = priceKey ? p[priceKey] : undefined;
-  const priceText =
-    typeof raw === "number"
-      ? formatNaira(raw)
-      : raw && raw !== "-"
-      ? String(raw)
-      : "Contact for price";
+                    return (
+                      <div className="mt-auto flex items-center justify-between gap-3">
+                        <div className="text-sm font-bold">
+                          <span aria-hidden>💰</span>{" "}
+                          {priceText}
+                        </div>
 
-  return (
-    <div className="mt-auto flex items-center justify-between gap-3">
-      <div className="text-sm font-bold">
-        <span aria-hidden>💰</span>{" "}
-        {priceText}
-      </div>
-
-      <a
-        href={waLinkForProduct(p, phoneDigitsOnly, headers)}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
-        title={`WhatsApp: ${whatsAppNumber}`}
-      >
-        <span aria-hidden className="mr-1">📩</span>
-        Message
-      </a>
-    </div>
-  );
-})()}
-
-
-
-
-
+                        <a
+                          href={waLinkForProduct(p, phoneDigitsOnly, headers)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-800"
+                          title={`WhatsApp: ${whatsAppNumber}`}
+                        >
+                          <span aria-hidden className="mr-1">📩</span>
+                          Message
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
               </Card>
             ))}
@@ -990,4 +981,30 @@ export default function ProductGrid({
       </section>
     </main>
   );
+}
+
+// WhatsApp helpers (kept at bottom to avoid hoist noise)
+function productToWhatsAppText(p, headers) {
+  const lines = ["Hi! I'm interested in this product:"];
+  headers
+    .filter((h) => h.toLowerCase() !== "id")
+    .forEach((h) => {
+      const v = p[h];
+      const out =
+        v == null || v === ""
+          ? "-"
+          : Array.isArray(v)
+          ? v.join(", ")
+          : h.toLowerCase() === "price" && typeof v === "number"
+          ? formatNaira(v)
+          : String(v);
+      lines.push(`• ${h}: ${out}`);
+    });
+  return encodeURIComponent(lines.join("\n"));
+}
+function waLinkForProduct(p, phoneDigitsOnly, headers) {
+  return `https://wa.me/${phoneDigitsOnly}?text=${productToWhatsAppText(
+    p,
+    headers,
+  )}`;
 }
