@@ -66,6 +66,10 @@ function specIconFor(header, value) {
   if (["delivery", "shipping"].some((k) => h.includes(k))) return "🚚";
   if (["referral"].some((k) => h.includes(k))) return "💰";
 
+  // NEW: gaming accessories extras
+  if (["special_features", "special features", "features"].some((k) => h.includes(k))) return "✨";
+  if (["build", "build quality", "material"].some((k) => h.includes(k))) return "🛠";
+
   // value-based fallback hints
   const s = cleanOne(value).toLowerCase();
   if (s.includes("free shipping")) return "🚚";
@@ -94,6 +98,9 @@ function buildEmojiSpecs(p, headers) {
     bundle: findHeader(headers, ["bundle", "included", "freebies", "extras"]),
     delivery: findHeader(headers, ["delivery", "shipping"]),
     referral: findHeader(headers, ["referral bonus", "referral"]),
+    // NEW: gaming accessories
+    special_features: findHeader(headers, ["special_features", "special features", "features"]),
+    build: findHeader(headers, ["build", "build quality", "material"]),
   };
 
   const order = [
@@ -105,6 +112,10 @@ function buildEmojiSpecs(p, headers) {
     "keyboard",
     "connectivity",
     "refresh",
+    // NEW: accessories-specific details
+    "special_features",
+    "build",
+    // misc
     "adjustments",
     "security",
     "lock",
@@ -126,6 +137,8 @@ function buildEmojiSpecs(p, headers) {
     const label =
       key === "refresh" ? "Refresh Rate"
       : key === "lock" ? "Security"
+      : key === "special_features" ? "Special Features"
+      : key === "build" ? "Build"
       : header;
 
     lines.push({ icon, label, text: val });
@@ -139,6 +152,8 @@ function buildEmojiSpecs(p, headers) {
       ? "🖥"
       : /laptop|notebook/i.test(cat)
       ? "💻"
+      : /accessor/i.test(cat)
+      ? "🎯"
       : "🧩";
     lines.unshift({ icon: catIcon, label: cat, text: "" });
   }
