@@ -41,6 +41,12 @@ export default function Footer({
             >
               business laptops
             </Link>
+          <Link
+  to="/Macbooks"
+  className="font-orbitron lowercase   transition hover:text-blue-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.55)]"
+>
+  Macbooks
+</Link>
             <Link
               to="/desktop"
               className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]"
