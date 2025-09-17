@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { ArrowRight, Laptop, Smartphone, Cable, Tablet , Gamepad2, TvIcon} from "lucide-react"
+import { ArrowRight, Laptop, Smartphone, Cable , Gamepad2, TvIcon, Laptop2} from "lucide-react"
 import ThemeToggle from "../components/ThemeToggle" // adjust path if needed
 
 // --- Minimal Card shim (now theme-aware) ---
@@ -32,15 +32,24 @@ const tiles = [
     Icon: Laptop,
     accent: "from-blue-500/20 to-blue-500/0 dark:from-blue-400/10 dark:to-transparent",
   },
+ 
   {
     to: "/Businesslaptop",
     title: "business laptops",
     subtitle: "HP •  Dell • Lenovo",
-    Icon: Smartphone,
+    Icon: Laptop2,
     accent: "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
+   {
+  to: "/Macbooks",
+  title: "macbooks",
+  // Apple • M-series • Retina
+  subtitle: "Air • Pro • M1–M4",
+  Icon: Laptop,
+  accent: "from-sky-900/20 to-blue-500/0 dark:from-blue-100/10 dark:to-transparent",
+},
   {
-    to: "/desktop",
+    to: "/Desktop",
     title: "desktops",
     subtitle: "Towers • All-in-Ones • Mini PCs",
     Icon: Cable,
@@ -61,7 +70,9 @@ const tiles = [
     subtitle: "Keyboard • Mouse •  Headset",
     Icon: Gamepad2,
     accent: "from-yellow-900/20 to-emerald-500/0 dark:from-green-100/10 dark:to-transparent",
-  },
+  }
+  
+
 ]
 
 export default function Home() {

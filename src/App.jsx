@@ -7,6 +7,7 @@ import Monitor from "./pages/monitor";
 import BusinessLaptop from "./pages/businesslaptop";
 import PageNotFound from "./pages/pageNotFound";
 import Desktop from "./pages/desktop";
+import Macbooks from "./pages/macbook";
 import GamingAccessories from "./pages/gamingAccesories";
 import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
               <Route path="/Businesslaptop" element={<BusinessLaptop />} />
               <Route path="/desktop" element={<Desktop />} />
+              <Route path="/Macbooks" element={<Macbooks />} />
               <Route path="/Monitor" element={<Monitor />} />
               <Route path="/GamingAccessories" element={<GamingAccessories />} />
               <Route path="*" element={<PageNotFound />} />

@@ -1,7 +1,7 @@
 // src/components/ProductGrid.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import ThemeToggle from "../components/ThemeToggle";
+import ThemeToggle from "./ThemeToggle";
 
 // ===== Helpers =====
 function formatNaira(n) {
