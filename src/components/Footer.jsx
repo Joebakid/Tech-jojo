@@ -25,47 +25,38 @@ export default function Footer({
           </div>
 
           {/* Nav: 2-col grid on mobile, wraps neatly; flex row on sm+ */}
-          <nav
-            aria-label="Footer navigation"
-            className="grid grid-cols-2 gap-x-5 gap-y-2 justify-items-start sm:flex sm:flex-wrap sm:items-center sm:gap-5"
-          >
-            <Link
-              to="/GamingLaptops"
-              className="font-orbitron lowercase tracking-wide transition hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]"
-            >
-              gaming laptops
-            </Link>
-            <Link
-              to="/Businesslaptop"
-              className="font-orbitron lowercase transition hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)]"
-            >
-              business laptops
-            </Link>
-          <Link
-  to="/Macbooks"
-  className="font-orbitron lowercase   transition hover:text-blue-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.55)]"
+  <nav
+  aria-label="Footer navigation"
+  className="flex gap-6 "
 >
-  Macbooks
-</Link>
-            <Link
-              to="/desktop"
-              className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]"
-            >
-              desktops
-            </Link>
-            <Link
-              to="/Monitor"
-              className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]"
-            >
-              monitors
-            </Link>
-            <Link
-              to="/GamingAccessories"
-              className="col-span-2 font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)] sm:col-span-1"
-            >
-              gaming accessories
-            </Link>
-          </nav>
+  {/* left column */}
+  <div className="flex flex-col flex-wrap  gap-2 lg:flex-row lg:flex-nowrap">
+    <Link to="/GamingLaptops" className="font-orbitron lowercase tracking-wide transition hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]">
+      gaming laptops
+    </Link>
+    <Link to="/Businesslaptop" className="font-orbitron lowercase transition hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)]">
+      business laptops
+    </Link>
+    <Link to="/Macbooks" className="font-orbitron lowercase transition hover:text-blue-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.55)]">
+      macbooks
+    </Link>
+  </div>
+
+  {/* right column */}
+  <div className="flex  flex-col flex-wrap gap-2 lg:flex-row lg:flex-nowrap">
+    <Link to="/desktop" className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]">
+      desktops
+    </Link>
+    <Link to="/Monitor" className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]">
+      monitors
+    </Link>
+    <Link to="/GamingAccessories" className="font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)]">
+      gaming accessories
+    </Link>
+  </div>
+</nav>
+
+
 
           {/* Actions: full-width stacked on mobile; inline on sm+ */}
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end sm:gap-3">
