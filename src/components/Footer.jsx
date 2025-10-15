@@ -31,26 +31,26 @@ export default function Footer({
 >
   {/* left column */}
   <div className="flex flex-col flex-wrap  gap-2 lg:flex-row lg:flex-nowrap">
-    <Link to="/GamingLaptops" className="font-orbitron lowercase tracking-wide transition hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]">
+    <Link to="/gaminglaptops" className="font-orbitron lowercase tracking-wide transition hover:text-violet-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]">
       gaming laptops
     </Link>
-    <Link to="/Businesslaptop" className="font-orbitron lowercase transition hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)]">
+    <Link to="/businesslaptops" className="font-orbitron lowercase transition hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.55)]">
       business laptops
     </Link>
-    <Link to="/Macbooks" className="font-orbitron lowercase transition hover:text-blue-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.55)]">
+    <Link to="/macbooks" className="font-orbitron lowercase transition hover:text-blue-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.55)]">
       macbooks
     </Link>
   </div>
 
   {/* right column */}
   <div className="flex  flex-col flex-wrap gap-2 lg:flex-row lg:flex-nowrap">
-    <Link to="/desktop" className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]">
+    <Link to="/desktops" className="font-orbitron lowercase tracking-wide transition hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.55)]">
       desktops
     </Link>
-    <Link to="/Monitor" className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]">
+    <Link to="/monitors" className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]">
       monitors
     </Link>
-    <Link to="/GamingAccessories" className="font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)]">
+    <Link to="/gamingAccessories" className="font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)]">
       gaming accessories
     </Link>
   </div>
