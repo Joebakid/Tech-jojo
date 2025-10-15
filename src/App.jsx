@@ -29,7 +29,7 @@ export default function App() {
               <Route path="/desktops" element={<Desktop />} />
               <Route path="/macbooks" element={<Macbooks />} />
               <Route path="/monitors" element={<Monitor />} />
-              <Route path="/gamingAccessories" element={<GamingAccessories />} />
+              <Route path="/gamingaccessories" element={<GamingAccessories />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </main>

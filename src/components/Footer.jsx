@@ -50,7 +50,7 @@ export default function Footer({
     <Link to="/monitors" className="font-orbitron lowercase tracking-wide transition hover:text-amber-300 hover:drop-shadow-[0_0_8px_rgba(252,211,77,0.55)]">
       monitors
     </Link>
-    <Link to="/gamingAccessories" className="font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)]">
+    <Link to="/gamingaccessories" className="font-orbitron lowercase transition hover:text-fuchsia-300 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.55)]">
       gaming accessories
     </Link>
   </div>

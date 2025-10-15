@@ -64,7 +64,7 @@ const tiles = [
     accent: "from-purple-500/20 to-purple-500/0 dark:from-purple-400/10 dark:to-transparent",
   },
   {
-    to: "/gamingAccessories",
+    to: "/gamingaccessories",
     title: "gaming accesories",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Keyboard • Mouse •  Headset",
