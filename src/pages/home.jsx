@@ -25,7 +25,7 @@ function CardContent({ children, className = "" }) {
 
 const tiles = [
   {
-    to: "/gamingLaptops",
+    to: "/gaminglaptops",
     title: "gaming laptops",
     // Intel ° Nvidia ° RGB
     subtitle: "Intel • Nvidia • RGB",
@@ -49,7 +49,7 @@ const tiles = [
   accent: "from-sky-900/20 to-blue-500/0 dark:from-blue-100/10 dark:to-transparent",
 },
   {
-    to: "/desktop",
+    to: "/desktops",
     title: "desktops",
     subtitle: "Towers • All-in-Ones • Mini PCs",
     Icon: Cable,

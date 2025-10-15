@@ -26,7 +26,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/gaminglaptops" element={<GamingLaptops />} />
               <Route path="/businesslaptops" element={<BusinessLaptop />} />
-              <Route path="/desktop" element={<Desktop />} />
+              <Route path="/desktops" element={<Desktop />} />
               <Route path="/macbooks" element={<Macbooks />} />
               <Route path="/monitors" element={<Monitor />} />
               <Route path="/gamingAccessories" element={<GamingAccessories />} />
