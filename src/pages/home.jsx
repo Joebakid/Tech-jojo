@@ -25,7 +25,7 @@ function CardContent({ children, className = "" }) {
 
 const tiles = [
   {
-    to: "/GamingLaptops",
+    to: "/gamingLaptops",
     title: "gaming laptops",
     // Intel ° Nvidia ° RGB
     subtitle: "Intel • Nvidia • RGB",
@@ -34,14 +34,14 @@ const tiles = [
   },
  
   {
-    to: "/Businesslaptop",
+    to: "/businesslaptop",
     title: "business laptops",
     subtitle: "HP •  Dell • Lenovo",
     Icon: Laptop2,
     accent: "from-emerald-500/20 to-emerald-500/0 dark:from-emerald-400/10 dark:to-transparent",
   },
    {
-  to: "/Macbooks",
+  to: "/macbooks",
   title: "macbooks",
   // Apple • M-series • Retina
   subtitle: "Air • Pro • M1–M4",
@@ -49,14 +49,14 @@ const tiles = [
   accent: "from-sky-900/20 to-blue-500/0 dark:from-blue-100/10 dark:to-transparent",
 },
   {
-    to: "/Desktop",
+    to: "/desktop",
     title: "desktops",
     subtitle: "Towers • All-in-Ones • Mini PCs",
     Icon: Cable,
     accent: "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
-    to: "/Monitor",
+    to: "/monitor",
     title: "monitors",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Samsung • AoC • High Refresh Rate",
@@ -64,7 +64,7 @@ const tiles = [
     accent: "from-purple-500/20 to-purple-500/0 dark:from-purple-400/10 dark:to-transparent",
   },
   {
-    to: "/GamingAccessories",
+    to: "/gamingAccessories",
     title: "gaming accesories",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Keyboard • Mouse •  Headset",
