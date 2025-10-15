@@ -34,7 +34,7 @@ const tiles = [
   },
  
   {
-    to: "/businesslaptop",
+    to: "/businesslaptops",
     title: "business laptops",
     subtitle: "HP •  Dell • Lenovo",
     Icon: Laptop2,
@@ -56,7 +56,7 @@ const tiles = [
     accent: "from-amber-500/20 to-amber-500/0 dark:from-amber-400/10 dark:to-transparent",
   },
   {
-    to: "/monitor",
+    to: "/monitors",
     title: "monitors",
     // Samsung ° AoC ° High Refresh Rate
     subtitle: "Samsung • AoC • High Refresh Rate",
